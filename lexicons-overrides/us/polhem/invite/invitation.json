@@ -1,0 +1,48 @@
+{
+  "defs": {
+    "main": {
+      "description": "An invitation for an event addressed to a specific user",
+      "key": "tid",
+      "record": {
+        "properties": {
+          "banner": {
+            "accept": [
+              "image/png",
+              "image/jpeg"
+            ],
+            "maxSize": 2000000,
+            "type": "blob"
+          },
+          "subject": {
+            "ref": "com.atproto.repo.strongRef",
+            "type": "ref"
+          },
+          "recipient": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "did"
+            }
+          },
+          "description": {
+            "ref": "at.markpub.markdown",
+            "type": "ref"
+          },
+          "createdAt": {
+            "format": "datetime",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject",
+          "recipient",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "type": "record"
+    }
+  },
+  "id": "us.polhem.invite.invitation",
+  "lexicon": 1
+}
