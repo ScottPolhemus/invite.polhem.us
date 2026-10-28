@@ -1,0 +1,31 @@
+# Run one ingest cycle as soon as a production deploy is live, instead of
+# waiting for the next scheduled one (see docs/record-sync.md)
+name: Ingest after deploy
+
+on: deployment_status
+
+permissions: {}
+
+jobs:
+  ingest:
+    # Vercel reports each deployment to GitHub; only a finished production one counts
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment == 'Production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Call /api/cron/ingest
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          # The production domain, not the deployment's own URL, which Vercel may protect
+          SITE_URL: ${{ vars.SITE_URL || 'https://invite.polhem.us' }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::Add CRON_SECRET (the same value as in Vercel) as a repository secret"
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error \
+            --retry 3 --retry-delay 5 --max-time 90 \
+            --header "Authorization: Bearer $CRON_SECRET" \
+            "$SITE_URL/api/cron/ingest"
