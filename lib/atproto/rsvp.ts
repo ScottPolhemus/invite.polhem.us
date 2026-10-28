@@ -28,11 +28,11 @@ export async function findRsvp(
 ) {
   let cursor: string | undefined
   for (let page = 0; page < MAX_PAGES; page++) {
+    // A PDS lists newest first by default (reverse: true would give oldest first)
     const res = await client.list(rsvp, {
       repo,
       limit: 100,
       cursor,
-      reverse: true,
     })
     const hit = res.records.find(
       (r) => (r.value as rsvp.Main).subject.uri === eventUri

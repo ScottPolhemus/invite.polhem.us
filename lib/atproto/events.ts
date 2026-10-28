@@ -86,11 +86,11 @@ export async function listRsvpedEvents(did: string): Promise<RsvpedEvent[]> {
     let scanned = 0
     let cursor: string | undefined
     while (scanned < MAX_RSVPS) {
+      // A PDS lists newest first by default (reverse: true would give oldest first)
       const res = await client.list(rsvp, {
         repo: did as `did:${string}:${string}`,
         limit: 100,
         cursor,
-        reverse: true,
       })
       for (const r of res.records) {
         const v = r.value as rsvp.Main
