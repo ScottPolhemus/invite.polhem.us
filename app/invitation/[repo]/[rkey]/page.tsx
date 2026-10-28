@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { AtUri } from '@atproto/syntax'
 import { Suspense } from 'react'
 
+import EventDetails from '@/app/_components/event-details'
 import InvitationActions from '@/app/_components/invitation-actions'
 import InvitationPreviewBanner from '@/app/_components/invitation-preview-banner'
 import PageHeader from '@/app/_components/page-header'
@@ -48,12 +49,9 @@ async function InvitationContent({
       </Suspense>
       <PageHeader
         heading={event.value.name}
-        subHeading={event.value.startsAt}
-        body={
-          invitation.value.description?.text?.markdown ??
-          event.value.description
-        }
+        body={invitation.value.description?.text?.markdown}
       />
+      <EventDetails event={event.value} />
       <Suspense>
         <InvitationActions
           invitation={invitation}

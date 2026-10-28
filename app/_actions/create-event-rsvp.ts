@@ -7,6 +7,7 @@ import * as rsvp from '@/app/__generated__/lexicons/community/lexicon/calendar/r
 import { RSVP } from '@/lib/atproto/collections'
 import { CREATED_WITH } from '@/lib/atproto/created-with'
 import { RSVP_STATUSES, findMyRsvp, strongRef } from '@/lib/atproto/rsvp'
+import { syncRsvp } from '@/lib/atproto/records'
 import { getClient } from '@/lib/atproto/session'
 
 /**
@@ -36,16 +37,17 @@ export async function createEventRsvp(formData: FormData) {
     // Update in place; keep a previously linked invitation unless a new one is given
     const { $type, ...rest } = existing.value
     void $type
-    await client.put(
-      rsvp,
-      {
-        ...rest,
-        subject,
-        invitation: invitation ?? rest.invitation,
-        status: rsvpStatus,
-      },
-      { rkey: new AtUri(existing.uri).rkey }
-    )
+    const updated = {
+      ...rest,
+      subject,
+      invitation: invitation ?? rest.invitation,
+      status: rsvpStatus,
+    }
+    const res = await client.put(rsvp, updated, {
+      rkey: new AtUri(existing.uri).rkey,
+    })
+    // Write-through, so it's stored before ingest catches up (only if it answers an invitation)
+    await syncRsvp(res.uri, res.cid, { $type: RSVP, ...updated })
     updateTag(`rsvp-response:${client.did}:${subject.uri}`)
     refresh()
     return
@@ -59,7 +61,8 @@ export async function createEventRsvp(formData: FormData) {
     status: rsvpStatus,
     createdWith: CREATED_WITH,
   }
-  await client.create(rsvp, value)
+  const res = await client.create(rsvp, value)
+  await syncRsvp(res.uri, res.cid, { $type: RSVP, ...value })
   updateTag(`rsvp-response:${client.did}:${subject.uri}`)
   refresh()
 }

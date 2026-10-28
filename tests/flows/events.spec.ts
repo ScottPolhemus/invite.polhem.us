@@ -47,7 +47,7 @@ describe('Flow: creating an event', () => {
     const target = await redirectOf(() => createEvent(form(fresh)))
 
     const rkey = target.split('/')[3]
-    expect(target).toBe(`/events/${alice.did}/${rkey}`)
+    expect(target).toBe(`/event/${alice.did}/${rkey}`)
     expect(world.network.get(alice.did, EVENT, rkey)?.value).toMatchObject({
       $type: EVENT,
       name: 'Potluck',
@@ -141,7 +141,7 @@ describe('Flow: creating an event', () => {
     async (_, bad, error) => {
       expect(
         await redirectOf(() => createEvent(form({ ...fresh, ...bad })))
-      ).toBe(`/events/new?error=${error}`)
+      ).toBe(`/event/new?error=${error}`)
       expect(world.network.writes).toHaveLength(0)
     }
   )
@@ -149,13 +149,13 @@ describe('Flow: creating an event', () => {
   it('asks you to sign in when you are signed out, or your sign-in has expired', async () => {
     world.cookies.clear()
     expect(await redirectOf(() => createEvent(form(fresh)))).toBe(
-      '/events/new?error=auth'
+      '/event/new?error=auth'
     )
 
     world.oauthSessions.clear()
     await signInWithExpiredSession(alice.did)
     expect(await redirectOf(() => createEvent(form(fresh)))).toBe(
-      '/events/new?error=auth'
+      '/event/new?error=auth'
     )
 
     expect(world.network.writes).toHaveLength(0)
@@ -218,7 +218,7 @@ describe('Flow: editing an event', () => {
 
   it('takes you to the event page and refreshes what visitors see', async () => {
     expect(await redirectOf(() => updateEvent(edit({ name: 'Renamed' })))).toBe(
-      `/events/${alice.did}/${ref.rkey}`
+      `/event/${alice.did}/${ref.rkey}`
     )
     expect(updateTag).toHaveBeenCalledWith(`record:${ref.uri}`)
   })
@@ -348,7 +348,7 @@ describe('Flow: editing an event', () => {
     'sends you back to the edit page, changing nothing, when the %s is invalid',
     async (_, bad, error) => {
       expect(await redirectOf(() => updateEvent(edit(bad)))).toBe(
-        `/events/${alice.did}/${ref.rkey}/edit?error=${error}`
+        `/event/${alice.did}/${ref.rkey}/edit?error=${error}`
       )
       expect(current()).toEqual(stored)
     }
@@ -360,7 +360,7 @@ describe('Flow: editing an event', () => {
     world.network.resetRepos() // the event no longer exists
 
     expect(await redirectOf(() => updateEvent(form))).toBe(
-      `/events/${alice.did}/${ref.rkey}/edit?error=missing`
+      `/event/${alice.did}/${ref.rkey}/edit?error=missing`
     )
   })
 
@@ -372,7 +372,7 @@ describe('Flow: editing an event', () => {
     // Bob submits Alice's record key; the action only ever looks in Bob's own repo
     expect(
       await redirectOf(() => updateEvent(edit({ name: 'Hijacked' })))
-    ).toBe(`/events/${bob.did}/${ref.rkey}/edit?error=missing`)
+    ).toBe(`/event/${bob.did}/${ref.rkey}/edit?error=missing`)
     expect(current()).toEqual(stored)
     expect(world.network.writes).toHaveLength(0)
   })

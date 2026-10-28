@@ -169,7 +169,7 @@ describe('Flow: seeing the events an account hosts and has RSVP’d to', () => {
       (a) => text(a) === 'Alice soon'
     )!
     expect(link.getAttribute('href')).toMatch(
-      new RegExp(`^/events/${alice.did}/`)
+      new RegExp(`^/event/${alice.did}/`)
     )
   })
 

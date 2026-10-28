@@ -9,7 +9,7 @@ import { CREATED_WITH } from '@/lib/atproto/created-with'
 import { readEventInput } from '@/lib/atproto/event-input'
 import { getClient } from '@/lib/atproto/session'
 
-const back = (error: string) => redirect(`/events/new?error=${error}`)
+const back = (error: string) => redirect(`/event/new?error=${error}`)
 
 export async function createEvent(formData: FormData) {
   const client = await getClient()
@@ -42,5 +42,5 @@ export async function createEvent(formData: FormData) {
 
   // Events aren't stored locally; the page reads this one from the PDS
   const { did, rkey } = new AtUri(res.uri)
-  redirect(`/events/${did}/${rkey}`)
+  redirect(`/event/${did}/${rkey}`)
 }

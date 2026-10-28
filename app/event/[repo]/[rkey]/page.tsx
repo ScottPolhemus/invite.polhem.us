@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
+import EventDetails from '@/app/_components/event-details'
 import InviteToEvent from '@/app/_components/invite-to-event'
 import PageHeader from '@/app/_components/page-header'
 import RsvpControl from '@/app/_components/rsvp-control'
@@ -12,7 +13,7 @@ async function OwnerActions({ did, rkey }: { did: string; rkey: string }) {
   if ((await getSessionDid()) !== did) return null
   return (
     <p className="mx-4">
-      <Link href={`/events/${did}/${rkey}/edit`} className="underline">
+      <Link href={`/event/${did}/${rkey}/edit`} className="underline">
         Edit event
       </Link>
     </p>
@@ -23,8 +24,8 @@ async function EventContent({
   params,
   searchParams,
 }: {
-  params: PageProps<'/events/[repo]/[rkey]'>['params']
-  searchParams: PageProps<'/events/[repo]/[rkey]'>['searchParams']
+  params: PageProps<'/event/[repo]/[rkey]'>['params']
+  searchParams: PageProps<'/event/[repo]/[rkey]'>['searchParams']
 }) {
   const { repo, rkey } = await params
   const { error } = await searchParams
@@ -35,11 +36,8 @@ async function EventContent({
 
   return (
     <>
-      <PageHeader
-        heading={event.value.name}
-        subHeading={event.value.startsAt}
-        body={event.value.description}
-      />
+      <PageHeader heading={event.value.name} />
+      <EventDetails event={event.value} />
       <Suspense>
         <OwnerActions did={did} rkey={rkey} />
       </Suspense>
@@ -47,13 +45,13 @@ async function EventContent({
         <RsvpControl
           eventUri={event.uri}
           eventCid={event.cid}
-          returnTo={`/events/${did}/${rkey}`}
+          returnTo={`/event/${did}/${rkey}`}
         />
       </Suspense>
       <Suspense>
         <InviteToEvent
           eventUri={event.uri}
-          returnTo={`/events/${did}/${rkey}`}
+          returnTo={`/event/${did}/${rkey}`}
           error={typeof error === 'string' ? error : undefined}
         />
       </Suspense>
@@ -61,7 +59,7 @@ async function EventContent({
   )
 }
 
-export default function EventPage(props: PageProps<'/events/[repo]/[rkey]'>) {
+export default function EventPage(props: PageProps<'/event/[repo]/[rkey]'>) {
   return (
     <Suspense>
       <EventContent params={props.params} searchParams={props.searchParams} />

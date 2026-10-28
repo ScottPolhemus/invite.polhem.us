@@ -57,7 +57,7 @@ function EventRow({
     <li className="border-foreground flex flex-wrap items-center gap-x-3 gap-y-1 border-b py-3">
       <div className="min-w-0 flex-1">
         <Link
-          href={`/events/${did}/${rkey}`}
+          href={`/event/${did}/${rkey}`}
           prefetch={false}
           className="underline"
         >
@@ -71,7 +71,7 @@ function EventRow({
       {manage && item.role === 'host' && (
         <>
           <Link
-            href={`/events/${did}/${rkey}/edit`}
+            href={`/event/${did}/${rkey}/edit`}
             prefetch={false}
             className="underline"
           >

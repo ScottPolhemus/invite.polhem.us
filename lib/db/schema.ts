@@ -29,6 +29,11 @@ export const record = pgTable(
       'btree',
       sql`(${t.value}->>'recipient')`
     ),
+    // RSVPs stored against the invitation they answer
+    index('record_invitation_ref_idx').using(
+      'btree',
+      sql`((${t.value}->'invitation'->>'uri'))`
+    ),
   ]
 )
 

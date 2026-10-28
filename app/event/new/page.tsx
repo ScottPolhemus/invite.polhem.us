@@ -9,7 +9,7 @@ import { getSessionDid } from '@/lib/atproto/session'
 async function NewEvent({
   searchParams,
 }: {
-  searchParams: PageProps<'/events/new'>['searchParams']
+  searchParams: PageProps<'/event/new'>['searchParams']
 }) {
   if (!(await getSessionDid())) return <AuthStatus />
   const { error } = await searchParams
@@ -22,7 +22,7 @@ async function NewEvent({
   )
 }
 
-export default function NewEventPage(props: PageProps<'/events/new'>) {
+export default function NewEventPage(props: PageProps<'/event/new'>) {
   return (
     <>
       <PageHeader

@@ -1,0 +1,1 @@
+CREATE INDEX "record_invitation_ref_idx" ON "record" USING btree ((("value"->'invitation'->>'uri')));

@@ -13,7 +13,7 @@ export default async function YourEvents() {
   return (
     <section className="mx-4 mb-4 max-w-xl">
       <h2 className="mb-1 text-2xl">Your events</h2>
-      <Link href="/events/new" className="mb-2 block underline">
+      <Link href="/event/new" className="mb-2 block underline">
         Create an event
       </Link>
       <Suspense>

@@ -184,7 +184,7 @@ describe('Flow: inviting someone to an event', () => {
   })
 
   it('returns errors to the page the form was on (an event page), not the new-invitation page', async () => {
-    const returnTo = `/events/${bob.did}/${event.rkey}`
+    const returnTo = `/event/${bob.did}/${event.rkey}`
 
     expect(
       await redirectOf(() =>

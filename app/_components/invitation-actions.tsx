@@ -67,7 +67,7 @@ export default async function InvitationActions({
       )}
       <p>
         Not {name}?{' '}
-        <Link href={`/events/${eventDid}/${eventRkey}`} className="underline">
+        <Link href={`/event/${eventDid}/${eventRkey}`} className="underline">
           Click here to view the event details.
         </Link>
       </p>

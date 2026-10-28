@@ -39,14 +39,14 @@ beforeEach(async () => {
 
 describe('Flow: starting to sign in', () => {
   it("sends you to your account's authorization page, remembering where to come back to", async () => {
-    const res = await postLogin({ handle: 'alice.test', next: '/events/new' })
+    const res = await postLogin({ handle: 'alice.test', next: '/event/new' })
 
     expect(res.status).toBe(303)
     const url = new URL(location(res)!)
     expect(url.origin + url.pathname).toBe('https://auth.example/authorize')
     expect(url.searchParams.get('did')).toBe(alice.did)
     expect(url.searchParams.get('scope')).toBe('atproto')
-    expect(url.searchParams.get('state')).toBe('/events/new')
+    expect(url.searchParams.get('state')).toBe('/event/new')
   })
 
   it('accepts a handle typed with a leading @ and stray spaces', async () => {
@@ -81,9 +81,9 @@ describe('Flow: starting to sign in', () => {
 
 describe('Flow: finishing signing in', () => {
   it('signs you in and returns you to the page you started from', async () => {
-    const res = await getCallback({ did: alice.did, state: '/events/new' })
+    const res = await getCallback({ did: alice.did, state: '/event/new' })
 
-    expect(location(res)).toBe(`${BASE}/events/new`)
+    expect(location(res)).toBe(`${BASE}/event/new`)
     expect(await getSessionDid()).toBe(alice.did)
     expect((await getClient())?.did).toBe(alice.did)
   })
@@ -125,7 +125,7 @@ describe('Flow: finishing signing in', () => {
   it('shows a sign-in error and signs nobody in when authorization is denied', async () => {
     const res = await getCallback({
       error: 'access_denied',
-      state: '/events/new',
+      state: '/event/new',
     })
 
     expect(location(res)).toBe(`${BASE}/?error=login`)

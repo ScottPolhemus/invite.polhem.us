@@ -41,7 +41,7 @@ async function NewInvitation({
       />
       <p className="mx-4 mt-4 max-w-xl text-sm">
         Not hosting yet?{' '}
-        <Link href="/events/new" className="underline">
+        <Link href="/event/new" className="underline">
           Create an event
         </Link>{' '}
         first.

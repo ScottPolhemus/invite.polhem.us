@@ -20,8 +20,8 @@ async function EditEvent({
   params,
   searchParams,
 }: {
-  params: PageProps<'/events/[repo]/[rkey]/edit'>['params']
-  searchParams: PageProps<'/events/[repo]/[rkey]/edit'>['searchParams']
+  params: PageProps<'/event/[repo]/[rkey]/edit'>['params']
+  searchParams: PageProps<'/event/[repo]/[rkey]/edit'>['searchParams']
 }) {
   const { repo, rkey } = await params
   const did = await resolveRepo(repo)
@@ -56,7 +56,7 @@ async function EditEvent({
         submitLabel="Save changes"
       />
       <div className="mx-4 mt-6 flex max-w-xl items-center gap-4">
-        <Link href={`/events/${did}/${rkey}`} className="underline">
+        <Link href={`/event/${did}/${rkey}`} className="underline">
           Cancel
         </Link>
         <form action={deleteEvent}>
@@ -75,7 +75,7 @@ async function EditEvent({
 }
 
 export default function EditEventPage(
-  props: PageProps<'/events/[repo]/[rkey]/edit'>
+  props: PageProps<'/event/[repo]/[rkey]/edit'>
 ) {
   return (
     <>

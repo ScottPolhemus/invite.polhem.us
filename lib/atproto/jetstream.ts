@@ -3,7 +3,7 @@ import 'server-only'
 import { Jetstream, parseRawRecord } from '@bsky/jetstream'
 import { lexToJson } from '@atproto/lex'
 
-import { INVITATION } from './collections'
+import { INVITATION, RSVP } from './collections'
 
 export type JetstreamCommit = {
   did: string
@@ -73,7 +73,7 @@ function toCommit(evt: RawCommitEvent): JetstreamCommit | null {
 }
 
 /**
- * Collect invitation commits after `cursor` (a v2 `seq`) until
+ * Collect invitation and RSVP commits after `cursor` (a v2 `seq`) until
  * `durationMs` elapses or `maxEvents` is reached. With an API token this uses
  * replay(): the archive from the cursor, handing off to the live tail without
  * a gap, so downtime between cycles is recovered. Without one it follows the
@@ -92,7 +92,7 @@ export async function collect(opts: {
   let lastSeq: bigint | undefined
 
   const common = {
-    collections: [INVITATION] as const,
+    collections: [INVITATION, RSVP] as const,
     kinds: ['commit' as const],
     // wire JSON ({$link} / {$bytes}), which is what we store as jsonb
     raw: true as const,

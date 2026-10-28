@@ -59,7 +59,7 @@ async function EditInvitation({
           <p className="text-sm opacity-70">Event</p>
           {event ? (
             <Link
-              href={`/events/${eventRef.did}/${eventRef.rkey}`}
+              href={`/event/${eventRef.did}/${eventRef.rkey}`}
               className="underline"
             >
               {event.value.name}

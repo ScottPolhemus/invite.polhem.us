@@ -13,6 +13,7 @@ import InvitationPage from '@/app/invitation/[repo]/[rkey]/page'
 import type { FakeAccount } from '../support/fake-atproto'
 import { signIn, signInWithExpiredSession } from '../support/helpers'
 import {
+  INVITATION,
   pageProps,
   renderPage,
   seedEvent,
@@ -109,7 +110,7 @@ describe('InvitationActions', () => {
     expect(text(login.querySelector('button'))).toBe('Sign in as @bob.test')
     expect(text(doc.body)).toContain('Not Bob?')
     expect(doc.querySelector('a')!.getAttribute('href')).toBe(
-      `/events/${alice.did}/${event.rkey}`
+      `/event/${alice.did}/${event.rkey}`
     )
     expect(doc.querySelector('button[name=status]')).toBeNull()
   })
@@ -190,10 +191,10 @@ describe('SessionFooter', () => {
 describe('AuthStatus', () => {
   it('shows the sign-in form to a signed-out visitor, returning to the page', async () => {
     const { doc } = await renderPage(
-      await AuthStatus({ returnTo: '/events/x/y' })
+      await AuthStatus({ returnTo: '/event/x/y' })
     )
     expect(hidden(doc.querySelector('form[action="/oauth/login"]')!).next).toBe(
-      '/events/x/y'
+      '/event/x/y'
     )
     expect(doc.querySelector('[role=status]')).toBeNull()
   })
@@ -220,7 +221,7 @@ describe('RsvpControl', () => {
     RsvpControl({
       eventUri: event.uri,
       eventCid: event.cid,
-      returnTo: '/events/x/y',
+      returnTo: '/event/x/y',
     })
 
   it('asks a signed-out visitor to sign in, without an expiry note', async () => {
@@ -248,18 +249,18 @@ describe('RsvpControl', () => {
 describe('InviteToEvent', () => {
   it('is hidden from signed-out visitors', async () => {
     expect(
-      await InviteToEvent({ eventUri: event.uri, returnTo: '/events/x/y' })
+      await InviteToEvent({ eventUri: event.uri, returnTo: '/event/x/y' })
     ).toBeNull()
   })
 
   it('posts to the invitation action, remembering the event and page', async () => {
     await signIn(carol.did)
     const { doc } = await renderPage(
-      await InviteToEvent({ eventUri: event.uri, returnTo: '/events/x/y' })
+      await InviteToEvent({ eventUri: event.uri, returnTo: '/event/x/y' })
     )
     expect(hidden(doc)).toMatchObject({
       eventUri: event.uri,
-      returnTo: '/events/x/y',
+      returnTo: '/event/x/y',
     })
     expect(doc.querySelector('[role=alert]')).toBeNull()
   })
@@ -295,7 +296,9 @@ describe('YourInvitations', () => {
     const { doc } = await renderPage(await YourInvitations())
     expect(text(doc.querySelector('h2'))).toBe('Your invitations')
     expect(doc.querySelector('a[href="/invitation/new"]')).not.toBeNull()
-    expect(text(doc.body)).toContain('haven’t created any invitations yet')
+    expect(text(doc.body)).toContain(
+      'haven’t created or received any invitations yet'
+    )
   })
 
   it('lists invitations with event, recipient, edit and delete', async () => {
@@ -307,6 +310,15 @@ describe('YourInvitations', () => {
       `/invitation/${alice.did}/${invitation.rkey}`
     )
     expect(text(row)).toContain('For Bob')
+    const created = row.querySelector('time')!
+    expect(created.getAttribute('dateTime')).toBe(
+      (
+        world.network.get(alice.did, INVITATION, invitation.rkey)!.value as {
+          createdAt: string
+        }
+      ).createdAt
+    )
+    expect(text(created)).toMatch(/^[A-Z][a-z]{2} \d{1,2}, \d{4}$/)
     expect(
       row.querySelector(`a[href$="/${invitation.rkey}/edit"]`)
     ).not.toBeNull()
@@ -320,11 +332,49 @@ describe('YourInvitations', () => {
     await seedRsvp(bob, event, 'going')
     await signIn(alice.did)
     const { doc } = await renderPage(await YourInvitations())
-    expect(text(doc.querySelector('li span:nth-child(2)'))).toBe('Going')
+    expect(text(doc.querySelector('li span:last-child'))).toBe('Going')
   })
 
-  it('only lists the signed-in account’s own invitations', async () => {
+  it('lists invitations sent to you, with who they are from and no way to edit them', async () => {
+    await seedRsvp(bob, event, 'interested')
     await signIn(bob.did)
+    const { doc } = await renderPage(await YourInvitations())
+    const rows = [...doc.querySelectorAll('li')]
+    expect(rows).toHaveLength(1)
+    const row = rows[0]
+    expect(text(row.querySelector('a'))).toBe('Potluck')
+    expect(row.querySelector('a')!.getAttribute('href')).toBe(
+      `/invitation/${alice.did}/${invitation.rkey}`
+    )
+    expect(text(row)).toContain('From Alice')
+    expect(text(row)).not.toContain('For ')
+    expect(text(row)).toContain('Interested')
+    expect(row.querySelector('a[href$="/edit"]')).toBeNull()
+    expect(row.querySelector('form')).toBeNull()
+  })
+
+  it('lists invitations you sent and received together, newest first, each once', async () => {
+    const later = await seedEvent(carol, { name: 'Carol’s party' })
+    await seedInvitation(carol, later, alice)
+    // one addressed to yourself is not listed twice
+    await seedInvitation(alice, later, alice)
+    await signIn(alice.did)
+    const { doc } = await renderPage(await YourInvitations())
+    expect(
+      [...doc.querySelectorAll('li')].map((li) => [
+        text(li.querySelector('a')),
+        text(li.querySelector('p span')),
+        !!li.querySelector('a[href$="/edit"]'),
+      ])
+    ).toEqual([
+      ['Carol’s party', 'For Alice', true],
+      ['Carol’s party', 'From Carol', false],
+      ['Potluck', 'For Bob', true],
+    ])
+  })
+
+  it('does not list invitations that are neither from nor to you', async () => {
+    await signIn(carol.did)
     const { doc } = await renderPage(await YourInvitations())
     expect(doc.querySelector('li')).toBeNull()
   })

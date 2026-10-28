@@ -19,7 +19,7 @@ export async function updateEvent(formData: FormData) {
   if (!client?.did) redirect('/')
 
   const did = client.did
-  const editPath = `/events/${did}/${rkey}/edit`
+  const editPath = `/event/${did}/${rkey}/edit`
 
   const input = readEventInput(formData)
   if ('error' in input) redirect(`${editPath}?error=${input.error}`)
@@ -35,5 +35,5 @@ export async function updateEvent(formData: FormData) {
   // Expire the cached event page (events aren't stored in the database)
   updateTag(`record:${res.uri}`)
 
-  redirect(`/events/${did}/${rkey}`)
+  redirect(`/event/${did}/${rkey}`)
 }
