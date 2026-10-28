@@ -1,12 +1,11 @@
 'use server'
 
-import { refresh } from 'next/cache'
+import { AtUri } from '@atproto/syntax'
+import { refresh, updateTag } from 'next/cache'
 
 import * as rsvp from '@/app/__generated__/lexicons/community/lexicon/calendar/rsvp'
 import { RSVP } from '@/lib/atproto/collections'
-import { AtUri } from '@atproto/syntax'
-
-import { upsertRecord } from '@/lib/atproto/records'
+import { CREATED_WITH } from '@/lib/atproto/created-with'
 import { RSVP_STATUSES, findMyRsvp, strongRef } from '@/lib/atproto/rsvp'
 import { getClient } from '@/lib/atproto/session'
 
@@ -33,28 +32,34 @@ export async function createEventRsvp(formData: FormData) {
   const existing = await findMyRsvp(client, subject.uri)
   const rsvpStatus = `${RSVP}#${status}`
 
-  // Write-through: the event is tracked (page view) or the invitation is
-  // stored, so the policy accepts this RSVP before Jetstream catches up
   if (existing) {
     // Update in place; keep a previously linked invitation unless a new one is given
     const { $type, ...rest } = existing.value
     void $type
-    const value = {
-      ...rest,
-      subject,
-      invitation: invitation ?? rest.invitation,
-      status: rsvpStatus,
-    }
-    const res = await client.put(rsvp, value, {
-      rkey: new AtUri(existing.uri).rkey,
-    })
-    await upsertRecord(res.uri, res.cid, { $type: RSVP, ...value })
+    await client.put(
+      rsvp,
+      {
+        ...rest,
+        subject,
+        invitation: invitation ?? rest.invitation,
+        status: rsvpStatus,
+      },
+      { rkey: new AtUri(existing.uri).rkey }
+    )
+    updateTag(`rsvp-response:${client.did}:${subject.uri}`)
     refresh()
     return
   }
 
-  const value = { subject, invitation, status: rsvpStatus }
-  const res = await client.create(rsvp, value)
-  await upsertRecord(res.uri, res.cid, { $type: RSVP, ...value })
+  // A variable, not an inline literal: createdWith isn't in the RSVP lexicon.
+  // Only a new RSVP gets it; the update path above keeps what the record has.
+  const value = {
+    subject,
+    invitation,
+    status: rsvpStatus,
+    createdWith: CREATED_WITH,
+  }
+  await client.create(rsvp, value)
+  updateTag(`rsvp-response:${client.did}:${subject.uri}`)
   refresh()
 }

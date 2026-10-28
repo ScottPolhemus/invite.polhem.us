@@ -25,15 +25,6 @@ export const record = pgTable(
   },
   (t) => [
     index('record_collection_did_idx').on(t.collection, t.did),
-    index('record_collection_rkey_idx').on(t.collection, t.rkey),
-    index('record_subject_uri_idx').using(
-      'btree',
-      sql`(${t.value}->'subject'->>'uri')`
-    ),
-    index('record_invitation_uri_idx').using(
-      'btree',
-      sql`(${t.value}->'invitation'->>'uri')`
-    ),
     index('record_recipient_idx').using(
       'btree',
       sql`(${t.value}->>'recipient')`
@@ -47,17 +38,6 @@ export const ingestCursor = pgTable('ingest_cursor', {
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
-})
-
-// Events whose updates/deletes we follow (referenced by an invitation, or viewed)
-export const trackedEvent = pgTable('tracked_event', {
-  uri: text('uri').primaryKey(),
-  reason: text('reason').notNull(),
-  firstSeenAt: timestamp('first_seen_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  // null until historical RSVPs have been pulled in
-  backfilledAt: timestamp('backfilled_at', { withTimezone: true }),
 })
 
 export const oauthState = pgTable('oauth_state', {

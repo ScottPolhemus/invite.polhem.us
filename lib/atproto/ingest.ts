@@ -6,11 +6,11 @@ import { eq } from 'drizzle-orm'
 import { db } from '@/lib/db/client'
 import { ingestCursor } from '@/lib/db/schema'
 
-import { backfillPendingEvents } from './event-backfill'
 import { collect } from './jetstream'
-import { deleteRecord, shouldStore, upsertRecord } from './records'
+import { deleteRecord, upsertRecord } from './records'
 
 const CURSOR_ID = 'jetstream'
+
 async function loadCursor() {
   const [row] = await db
     .select()
@@ -33,9 +33,6 @@ async function saveCursor(seq: bigint) {
 export async function runIngestCycle(
   opts: { durationMs?: number; maxEvents?: number } = {}
 ) {
-  // Tracked events pick up historical RSVPs before the live stream continues
-  await backfillPendingEvents()
-
   const cursor = await loadCursor()
   const { commits, lastSeq } = await collect({
     cursor,
@@ -52,7 +49,6 @@ export async function runIngestCycle(
       continue
     }
     if (!c.record || !c.cid) continue
-    if (!(await shouldStore(c.collection, uri, c.record))) continue
     await upsertRecord(uri, c.cid, c.record, c.seq)
     changed.push(uri)
   }

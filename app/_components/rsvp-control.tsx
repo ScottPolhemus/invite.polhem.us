@@ -1,36 +1,37 @@
-import { removeEventRsvp } from '@/app/_actions/remove-event-rsvp'
-import { getClient } from '@/lib/atproto/session'
-import { findMyRsvp } from '@/lib/atproto/rsvp'
+import { getClient, getSessionDid } from '@/lib/atproto/session'
+import { readRsvpResponse } from '@/lib/data'
 
 import AuthStatus from './auth-status'
-import RsvpModal from './rsvp-modal'
+import RsvpButtons from './rsvp-buttons'
 
+/**
+ * An event page's RSVP buttons. They need a working login session, not just a
+ * signed-in cookie: choosing a response writes to the account's PDS, and with a
+ * session that can't be restored (expired or revoked) the buttons would look
+ * live but do nothing. With no session the visitor gets the sign-in form (with
+ * a note if their sign-in expired), returning to this page afterwards.
+ */
 export default async function RsvpControl({
   eventUri,
   eventCid,
+  returnTo,
 }: {
   eventUri: string
   eventCid: string
+  /** This page's path, so signing in brings the visitor back here */
+  returnTo: string
 }) {
   const client = await getClient()
-  if (!client?.did) return <AuthStatus />
+  if (!client?.did) {
+    // A cookie with no restorable session is an expired sign-in, not a signed-out visitor
+    return (
+      <AuthStatus expired={!!(await getSessionDid())} returnTo={returnTo} />
+    )
+  }
 
-  const existing = await findMyRsvp(client, eventUri)
-  if (!existing) return <RsvpModal eventUri={eventUri} eventCid={eventCid} />
-
+  // Read fresh from their own repo, so it matches the record exactly
+  const current = await readRsvpResponse(client.did, eventUri)
   return (
-    <div className="flex">
-      <RsvpModal
-        eventUri={eventUri}
-        eventCid={eventCid}
-        currentStatus={existing.value.status.split('#')[1]}
-      />
-      <form action={removeEventRsvp}>
-        <input type="hidden" name="eventUri" value={eventUri} />
-        <button className="rounded-full border px-4 py-2">
-          Remove your RSVP
-        </button>
-      </form>
-    </div>
+    <RsvpButtons event={{ uri: eventUri, cid: eventCid }} current={current} />
   )
 }

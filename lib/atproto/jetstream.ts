@@ -1,8 +1,9 @@
 import 'server-only'
 
-import { Jetstream } from '@bsky/jetstream'
+import { Jetstream, parseRawRecord } from '@bsky/jetstream'
+import { lexToJson } from '@atproto/lex'
 
-import { COLLECTIONS, RSVP } from './collections'
+import { INVITATION } from './collections'
 
 export type JetstreamCommit = {
   did: string
@@ -44,23 +45,35 @@ type RawCommitEvent = {
 function toCommit(evt: RawCommitEvent): JetstreamCommit | null {
   const c = evt.commit
   if (evt.kind !== 'commit' || !c) return null
-  return {
+
+  const base = {
     did: evt.did,
     seq: BigInt(evt.seq),
     operation: c.operation,
     collection: c.collection,
     rkey: c.rkey,
-    ...(c.operation === 'delete'
-      ? {}
-      : {
-          cid: String(c.cid),
-          record: c.record as Record<string, unknown>,
-        }),
+  }
+  if (c.operation === 'delete') return base
+
+  try {
+    return {
+      ...base,
+      cid: String(c.cid),
+      // live yields wire JSON but replay/snapshot yield DAG-CBOR bytes;
+      // normalize both to the JSON we store ({$link}/{$bytes} form)
+      record: lexToJson(
+        parseRawRecord(c.record as Parameters<typeof parseRawRecord>[0])
+      ) as Record<string, unknown>,
+    }
+  } catch (err) {
+    // One malformed record shouldn't fail the whole cycle
+    console.warn('[jetstream] skipping undecodable record', base.did, err)
+    return null
   }
 }
 
 /**
- * Collect commits for our collections after `cursor` (a v2 `seq`) until
+ * Collect invitation commits after `cursor` (a v2 `seq`) until
  * `durationMs` elapses or `maxEvents` is reached. With an API token this uses
  * replay(): the archive from the cursor, handing off to the live tail without
  * a gap, so downtime between cycles is recovered. Without one it follows the
@@ -79,7 +92,7 @@ export async function collect(opts: {
   let lastSeq: bigint | undefined
 
   const common = {
-    collections: [...COLLECTIONS],
+    collections: [INVITATION] as const,
     kinds: ['commit' as const],
     // wire JSON ({$link} / {$bytes}), which is what we store as jsonb
     raw: true as const,
@@ -117,39 +130,4 @@ export async function collect(opts: {
   }
 
   return { commits, lastSeq }
-}
-
-/**
- * Scan the sealed RSVP archive for RSVPs whose subject is one of `eventUris`.
- * Returns what it found and whether the scan reached the end of the archive
- * within `durationMs`.
- */
-export async function scanRsvps(
-  eventUris: Set<string>,
-  durationMs: number
-): Promise<{ commits: JetstreamCommit[]; completed: boolean }> {
-  const abort = new AbortController()
-  const timer = setTimeout(() => abort.abort(), durationMs)
-  const commits: JetstreamCommit[] = []
-  let completed = false
-
-  try {
-    for await (const evt of client().snapshot({
-      collections: [RSVP],
-      kinds: ['commit'],
-      raw: true,
-      signal: abort.signal,
-    })) {
-      const commit = toCommit(evt as unknown as RawCommitEvent)
-      if (commit?.operation === 'delete' || !commit?.record) continue
-      const subject = (commit.record as { subject?: { uri?: string } }).subject
-      if (subject?.uri && eventUris.has(subject.uri)) commits.push(commit)
-    }
-    completed = true
-  } catch (err) {
-    if (!abort.signal.aborted) throw err
-  } finally {
-    clearTimeout(timer)
-  }
-  return { commits, completed }
 }

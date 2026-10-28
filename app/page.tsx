@@ -1,20 +1,23 @@
-import Link from 'next/link'
 import { Suspense } from 'react'
 
 import AuthStatus from './_components/auth-status'
 import PageHeader from './_components/page-header'
+import YourEvents from './_components/your-events'
+import YourInvitations from './_components/your-invitations'
 
 export default function Home() {
   return (
     <>
       <PageHeader
         heading={'Polhem.us Invite'}
-        subHeading={'Description'}
-        body={'Custom invitations for Atmosphere events'}
+        subHeading={'Custom invitations for Atmosphere events'}
       />
-      <Link href="/invitation/new" className="mx-4 mb-4 block underline">
-        Create an invitation
-      </Link>
+      <Suspense>
+        <YourInvitations />
+      </Suspense>
+      <Suspense>
+        <YourEvents />
+      </Suspense>
       <Suspense>
         <AuthStatus />
       </Suspense>

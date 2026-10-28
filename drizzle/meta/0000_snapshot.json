@@ -1,5 +1,5 @@
 {
-  "id": "91a8b11b-6b69-41c7-8dd2-4f7ff19b3af9",
+  "id": "b6f71ab2-eba4-45dc-bf75-b2e6328e834e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -175,57 +175,6 @@
           "method": "btree",
           "with": {}
         },
-        "record_collection_rkey_idx": {
-          "name": "record_collection_rkey_idx",
-          "columns": [
-            {
-              "expression": "collection",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "rkey",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "record_subject_uri_idx": {
-          "name": "record_subject_uri_idx",
-          "columns": [
-            {
-              "expression": "(\"value\"->'subject'->>'uri')",
-              "asc": true,
-              "isExpression": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "record_invitation_uri_idx": {
-          "name": "record_invitation_uri_idx",
-          "columns": [
-            {
-              "expression": "(\"value\"->'invitation'->>'uri')",
-              "asc": true,
-              "isExpression": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "record_recipient_idx": {
           "name": "record_recipient_idx",
           "columns": [
@@ -242,44 +191,6 @@
           "with": {}
         }
       },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.tracked_event": {
-      "name": "tracked_event",
-      "schema": "",
-      "columns": {
-        "uri": {
-          "name": "uri",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "reason": {
-          "name": "reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "first_seen_at": {
-          "name": "first_seen_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "backfilled_at": {
-          "name": "backfilled_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},

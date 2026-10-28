@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server'
 
 import { PUBLIC_URL, getOAuthClient } from '@/lib/atproto/oauth-client'
+import { safeRedirectPath } from '@/lib/atproto/redirect'
 import { clearSessionCookie, getSessionDid } from '@/lib/atproto/session'
 
-export async function POST() {
+export async function POST(request: Request) {
+  const next = safeRedirectPath((await request.formData()).get('next'))
   const did = await getSessionDid()
   if (did) {
     try {
@@ -14,5 +16,5 @@ export async function POST() {
     }
   }
   await clearSessionCookie()
-  return NextResponse.redirect(new URL('/', PUBLIC_URL), 303)
+  return NextResponse.redirect(new URL(next ?? '/', PUBLIC_URL), 303)
 }

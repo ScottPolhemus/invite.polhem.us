@@ -27,15 +27,5 @@ CREATE TABLE "record" (
 	"indexed_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "tracked_event" (
-	"uri" text PRIMARY KEY NOT NULL,
-	"reason" text NOT NULL,
-	"first_seen_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"backfilled_at" timestamp with time zone
-);
---> statement-breakpoint
 CREATE INDEX "record_collection_did_idx" ON "record" USING btree ("collection","did");--> statement-breakpoint
-CREATE INDEX "record_collection_rkey_idx" ON "record" USING btree ("collection","rkey");--> statement-breakpoint
-CREATE INDEX "record_subject_uri_idx" ON "record" USING btree (("value"->'subject'->>'uri'));--> statement-breakpoint
-CREATE INDEX "record_invitation_uri_idx" ON "record" USING btree (("value"->'invitation'->>'uri'));--> statement-breakpoint
 CREATE INDEX "record_recipient_idx" ON "record" USING btree (("value"->>'recipient'));

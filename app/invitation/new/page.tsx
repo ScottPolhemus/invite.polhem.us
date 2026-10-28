@@ -1,82 +1,52 @@
+import Link from 'next/link'
 import { Suspense } from 'react'
 
 import { createInvitation } from '@/app/_actions/create-invitation'
 import AuthStatus from '@/app/_components/auth-status'
+import InvitationForm from '@/app/_components/invitation-form'
 import PageHeader from '@/app/_components/page-header'
-import * as event from '@/app/__generated__/lexicons/community/lexicon/calendar/event'
-import { getClient } from '@/lib/atproto/session'
+import { listEvents, listUpcomingRsvpedEvents } from '@/lib/atproto/events'
+import { getClient, getSessionDid } from '@/lib/atproto/session'
 
-const ERRORS: Record<string, string> = {
-  auth: 'Sign in to create an invitation.',
-  recipient: 'Enter the recipient’s handle or DID, and check that it exists.',
-  event: 'Choose an event from your list.',
-}
-
-async function InvitationForm({
+async function NewInvitation({
   searchParams,
 }: {
   searchParams: PageProps<'/invitation/new'>['searchParams']
 }) {
   const client = await getClient()
-  if (!client?.did) return <AuthStatus />
+  if (!client?.did)
+    return (
+      <AuthStatus
+        expired={!!(await getSessionDid())}
+        returnTo="/invitation/new"
+      />
+    )
 
   const { error } = await searchParams
-  const { records } = await client.list(event, { limit: 100 })
-  const field = 'border-foreground w-full rounded border p-2'
+  // The default list: events you made, then upcoming ones you've RSVP'd to
+  const [own, rsvped] = await Promise.all([
+    listEvents(client.did),
+    listUpcomingRsvpedEvents(client.did),
+  ])
+  const ownUris = new Set(own.map((e) => e.uri))
+  const events = [...own, ...rsvped.filter((e) => !ownUris.has(e.uri))]
 
   return (
-    <form
-      action={createInvitation}
-      className="mx-4 flex max-w-xl flex-col gap-4"
-    >
-      {typeof error === 'string' && ERRORS[error] && (
-        <p role="alert">{ERRORS[error]}</p>
-      )}
-
-      <label className="flex flex-col gap-1">
-        Event
-        {records.length === 0 ? (
-          <span>You have no events yet.</span>
-        ) : (
-          <select name="eventUri" required className={field}>
-            {records.map((r) => {
-              const e = r.value as event.Main
-              return (
-                <option key={r.uri} value={r.uri}>
-                  {e.name}
-                  {e.startsAt
-                    ? ` (${new Date(e.startsAt).toDateString()})`
-                    : ''}
-                </option>
-              )
-            })}
-          </select>
-        )}
-      </label>
-
-      <label className="flex flex-col gap-1">
-        Recipient
-        <input
-          name="recipient"
-          required
-          placeholder="alice.bsky.social"
-          className={field}
-        />
-        <span className="text-sm opacity-70">A handle or DID.</span>
-      </label>
-
-      <label className="flex flex-col gap-1">
-        Message (Markdown, optional)
-        <textarea name="description" rows={5} className={field} />
-      </label>
-
-      <button
-        disabled={records.length === 0}
-        className="bg-foreground text-background self-start rounded-full px-4 py-2 disabled:opacity-50"
-      >
-        Create invitation
-      </button>
-    </form>
+    <>
+      <InvitationForm
+        action={createInvitation}
+        ownEvents={events}
+        error={typeof error === 'string' ? error : undefined}
+        submitLabel="Create invitation"
+      />
+      <p className="mx-4 mt-4 max-w-xl text-sm">
+        Not hosting yet?{' '}
+        <Link href="/events/new" className="underline">
+          Create an event
+        </Link>{' '}
+        first.
+      </p>
+    </>
   )
 }
 
@@ -88,7 +58,7 @@ export default function NewInvitationPage(props: PageProps<'/invitation/new'>) {
         subHeading={'Invite someone to one of your events'}
       />
       <Suspense>
-        <InvitationForm searchParams={props.searchParams} />
+        <NewInvitation searchParams={props.searchParams} />
       </Suspense>
     </>
   )
