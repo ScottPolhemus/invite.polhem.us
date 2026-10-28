@@ -1,3 +1,7 @@
+import Link from 'next/link'
+import { Suspense } from 'react'
+
+import AuthStatus from './_components/auth-status'
 import PageHeader from './_components/page-header'
 
 export default function Home() {
@@ -8,9 +12,12 @@ export default function Home() {
         subHeading={'Description'}
         body={'Custom invitations for Atmosphere events'}
       />
-      <button className="bg-foreground text-background mx-4 rounded-full p-2">
-        Sign in to create an invitation
-      </button>
+      <Link href="/invitation/new" className="mx-4 mb-4 block underline">
+        Create an invitation
+      </Link>
+      <Suspense>
+        <AuthStatus />
+      </Suspense>
     </>
   )
 }

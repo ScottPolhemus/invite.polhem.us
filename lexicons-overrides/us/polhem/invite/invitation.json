@@ -18,14 +18,15 @@
             "type": "ref"
           },
           "recipient": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "did"
-            }
+            "type": "string",
+            "format": "did"
           },
           "description": {
             "ref": "at.markpub.markdown",
+            "type": "ref"
+          },
+          "basicTheme": {
+            "ref": "site.standard.theme.basic",
             "type": "ref"
           },
           "createdAt": {

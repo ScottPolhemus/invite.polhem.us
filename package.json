@@ -3,30 +3,47 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "yarn build:lex",
     "dev": "next dev",
+    "prebuild": "yarn build:lex",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "build:lex": "lex build --out=\"./app/__generated__/lexicons\" --import-ext=\"\" --clear"
+    "build:lex": "lex build --out=\"./app/__generated__/lexicons\" --import-ext=\"\" --clear",
+    "db:up": "docker compose up -d --wait db",
+    "db:down": "docker compose down",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@atproto/identity": "^0.5.20",
     "@atproto/lex": "^0.4.3",
+    "@atproto/oauth-client-node": "^0.5.13",
+    "@atproto/syntax": "^0.7.7",
+    "@bsky/jetstream": "^1.0.0",
+    "drizzle-orm": "^0.45.4",
+    "jose": "^6.2.13",
     "next": "16.4.3",
+    "pg": "^8.23.1",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.9.10",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

@@ -5,6 +5,7 @@
     "com.atproto.repo.strongRef",
     "community.lexicon.calendar.event",
     "community.lexicon.calendar.rsvp",
+    "site.standard.theme.basic",
     "us.polhem.invite.invitation"
   ],
   "resolutions": {
@@ -44,9 +45,17 @@
       "uri": "at://did:plc:mtr7qrqtcyseedx3jyr5o7db/com.atproto.lexicon.schema/community.lexicon.location.hthree",
       "cid": "bafyreic6xmiv4ycbcfvcvj5uu537ytl7hnjazcxf7hhd7g6o6s7p6tonky"
     },
+    "site.standard.theme.basic": {
+      "uri": "at://did:plc:re3ebnp5v7ffagz6rb6xfei4/com.atproto.lexicon.schema/site.standard.theme.basic",
+      "cid": "bafyreiabm6f64zosv5jcdmwd3qvekjhoi7enevg53rxj734ney4sd6lmku"
+    },
+    "site.standard.theme.color": {
+      "uri": "at://did:plc:re3ebnp5v7ffagz6rb6xfei4/com.atproto.lexicon.schema/site.standard.theme.color",
+      "cid": "bafyreicps42z5maxdqwml7t3klsrrpk332jthyfgpeb4zjn3wlvp5vyjia"
+    },
     "us.polhem.invite.invitation": {
       "uri": "file://./lexicons-overrides/us/polhem/invite/invitation.json",
-      "cid": "bafyreiawldbv65jlwi6lgkees63xbv3nn35i4dklxvlodp35abjuflakoi"
+      "cid": "bafyreib7qy2arlcweih3g6bjzcupar3l2zc25gqinri47xhb4nvpszlkyq"
     }
   }
 }

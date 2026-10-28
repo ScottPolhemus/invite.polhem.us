@@ -1,0 +1,60 @@
+'use server'
+
+import { refresh } from 'next/cache'
+
+import * as rsvp from '@/app/__generated__/lexicons/community/lexicon/calendar/rsvp'
+import { RSVP } from '@/lib/atproto/collections'
+import { AtUri } from '@atproto/syntax'
+
+import { upsertRecord } from '@/lib/atproto/records'
+import { RSVP_STATUSES, findMyRsvp, strongRef } from '@/lib/atproto/rsvp'
+import { getClient } from '@/lib/atproto/session'
+
+/**
+ * RSVP to an event, optionally in response to an invitation. Updates the
+ * user's existing RSVP for the event instead of creating a duplicate.
+ */
+export async function createEventRsvp(formData: FormData) {
+  const status = String(formData.get('status'))
+  const subject = strongRef(
+    String(formData.get('eventUri')),
+    String(formData.get('eventCid'))
+  )
+  const invitationUri = formData.get('invitationUri')
+  const invitationCid = formData.get('invitationCid')
+  const invitation =
+    invitationUri && invitationCid
+      ? strongRef(String(invitationUri), String(invitationCid))
+      : undefined
+  if (!RSVP_STATUSES.includes(status as (typeof RSVP_STATUSES)[number])) return
+
+  const client = await getClient()
+  if (!client?.did) return
+  const existing = await findMyRsvp(client, subject.uri)
+  const rsvpStatus = `${RSVP}#${status}`
+
+  // Write-through: the event is tracked (page view) or the invitation is
+  // stored, so the policy accepts this RSVP before Jetstream catches up
+  if (existing) {
+    // Update in place; keep a previously linked invitation unless a new one is given
+    const { $type, ...rest } = existing.value
+    void $type
+    const value = {
+      ...rest,
+      subject,
+      invitation: invitation ?? rest.invitation,
+      status: rsvpStatus,
+    }
+    const res = await client.put(rsvp, value, {
+      rkey: new AtUri(existing.uri).rkey,
+    })
+    await upsertRecord(res.uri, res.cid, { $type: RSVP, ...value })
+    refresh()
+    return
+  }
+
+  const value = { subject, invitation, status: rsvpStatus }
+  const res = await client.create(rsvp, value)
+  await upsertRecord(res.uri, res.cid, { $type: RSVP, ...value })
+  refresh()
+}
