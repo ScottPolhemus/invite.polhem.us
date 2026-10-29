@@ -62,16 +62,23 @@ export const sessionStore: NodeSavedSessionStore = {
   },
 }
 
-// Cross-instance lock so concurrent invocations don't refresh the same token twice
+// Cross-instance lock so concurrent invocations don't refresh the same token
+// twice. Transaction-scoped, so it also works through a transaction-mode
+// connection pooler (such as Neon's): the lock and its release can't land on
+// different server connections, and it's released however the work ends.
 export const requestLock: RuntimeLock = async (name, fn) => {
   const client = await pool.connect()
   try {
-    await client.query('SELECT pg_advisory_lock(hashtext($1))', [name])
+    await client.query('BEGIN')
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [name])
     try {
       return await fn()
     } finally {
-      await client.query('SELECT pg_advisory_unlock(hashtext($1))', [name])
+      await client.query('COMMIT')
     }
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {})
+    throw err
   } finally {
     client.release()
   }
