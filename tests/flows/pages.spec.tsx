@@ -113,7 +113,9 @@ describe('InvitationActions', () => {
       handle: 'bob.test',
       next: `/invitation/${alice.did}/${invitation.rkey}`,
     })
-    expect(text(login.querySelector('button'))).toBe('Sign in as @bob.test')
+    expect(text(login.querySelector('button'))).toBe(
+      'Sign in as @bob.test to respond'
+    )
     expect(text(doc.body)).toContain('Not Bob?')
     expect(doc.querySelector('a')!.getAttribute('href')).toBe(
       `/event/${alice.did}/${event.rkey}`
@@ -359,7 +361,7 @@ describe('YourInvitations', () => {
     expect(row.querySelector('a')!.getAttribute('href')).toBe(
       `/invitation/${alice.did}/${invitation.rkey}`
     )
-    expect(text(row)).toContain('For Bob')
+    expect(text(row)).toContain('Invited Bob on')
     const created = row.querySelector('time')!
     expect(created.getAttribute('dateTime')).toBe(
       (
@@ -396,8 +398,7 @@ describe('YourInvitations', () => {
     expect(row.querySelector('a')!.getAttribute('href')).toBe(
       `/invitation/${alice.did}/${invitation.rkey}`
     )
-    expect(text(row)).toContain('From Alice')
-    expect(text(row)).not.toContain('For ')
+    expect(text(row)).toContain('Invited by Alice on')
     expect(text(row)).toContain('Interested')
     expect(row.querySelector('a[href$="/edit"]')).toBeNull()
     expect(row.querySelector('form')).toBeNull()
@@ -413,13 +414,13 @@ describe('YourInvitations', () => {
     expect(
       [...doc.querySelectorAll('li')].map((li) => [
         text(li.querySelector('a')),
-        text(li.querySelector('p span')),
+        text(li.querySelector('p span')).replace(/ on .*$/, ''),
         !!li.querySelector('a[href$="/edit"]'),
       ])
     ).toEqual([
-      ['Carol’s party', 'For Alice', true],
-      ['Carol’s party', 'From Carol', false],
-      ['Potluck', 'For Bob', true],
+      ['Carol’s party', 'Invited Alice', true],
+      ['Carol’s party', 'Invited by Carol', false],
+      ['Potluck', 'Invited Bob', true],
     ])
   })
 
@@ -451,8 +452,8 @@ describe('invitation page', () => {
     })
     const { doc, is404 } = await page(alice.did, inv.rkey)
     expect(is404).toBe(false)
-    expect(text(doc.body)).toContain('Invitation for Bob')
-    expect(text(doc.querySelector('h1'))).toBe('Potluck')
+    expect(text(doc.body)).toContain('created this invitation for Bob')
+    expect(text(doc.querySelector('h1'))).toBe('Invitation to Potluck')
     expect(text(doc.body)).toContain('Bring a dish!')
     expect(doc.querySelector('[role=note]')).toBeNull()
   })
@@ -489,7 +490,7 @@ describe('invitation page', () => {
   it('works with a handle in the URL', async () => {
     const { doc, is404 } = await page('alice.test')
     expect(is404).toBe(false)
-    expect(text(doc.querySelector('h1'))).toBe('Potluck')
+    expect(text(doc.querySelector('h1'))).toBe('Invitation to Potluck')
   })
 
   it('shows the author a preview banner and read-only RSVP buttons', async () => {
