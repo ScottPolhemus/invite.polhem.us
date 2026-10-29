@@ -11,7 +11,7 @@ export default async function SessionFooter() {
   const { name, handle } = await getAccountLabel(did)
 
   return (
-    <footer className="border-foreground mx-4 mt-auto border-t px-4 py-3">
+    <footer className="border-foreground mx-4 mt-auto border-t py-3">
       <div className="page-content flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
         <span className="min-w-0 truncate">
           Signed in as <strong>{name}</strong>
