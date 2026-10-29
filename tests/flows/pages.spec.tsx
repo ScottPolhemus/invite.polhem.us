@@ -1,13 +1,13 @@
 import { createElement } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import AuthStatus from '@/app/_components/auth-status'
-import InvitationActions from '@/app/_components/invitation-actions'
-import InvitationPreviewBanner from '@/app/_components/invitation-preview-banner'
-import InviteToEvent from '@/app/_components/invite-to-event'
-import RsvpControl from '@/app/_components/rsvp-control'
-import SessionFooter from '@/app/_components/session-footer'
-import YourInvitations from '@/app/_components/your-invitations'
+import AuthStatus from '@/app/_components/auth/auth-status'
+import InvitationActions from '@/app/_components/invitations/invitation-actions'
+import InvitationPreviewBanner from '@/app/_components/invitations/invitation-preview-banner'
+import InviteToEvent from '@/app/_components/events/invite-to-event'
+import RsvpControl from '@/app/_components/rsvps/rsvp-control'
+import SessionFooter from '@/app/_components/auth/session-footer'
+import YourInvitations from '@/app/_components/invitations/your-invitations'
 import InvitationPage from '@/app/invitation/[repo]/[rkey]/page'
 
 import type { FakeAccount } from '../support/fake-atproto'
@@ -24,7 +24,7 @@ import {
 } from '../support/fixtures'
 import { world } from '../support/world'
 
-vi.mock('@/app/_components/confirm-submit', () => ({
+vi.mock('@/app/_components/ui/confirm-submit', () => ({
   default: ({ message, children }: { message: string; children: unknown }) =>
     createElement('button', { 'data-message': message }, children as never),
 }))
@@ -62,6 +62,7 @@ const hidden = (root: ParentNode) =>
   )
 
 const props = () => ({
+  author: alice.did,
   invitation: {
     uri: invitation.uri,
     cid: invitation.cid,
@@ -89,7 +90,7 @@ describe('InvitationActions', () => {
       eventCid: event.cid,
     })
     expect(pressed(doc)).toEqual([])
-    expect(doc.body.textContent).not.toContain('Remove your RSVP')
+    expect(doc.body.textContent).not.toContain('Delete your RSVP')
   })
 
   it("highlights the recipient's current response and offers to remove it", async () => {
@@ -97,7 +98,12 @@ describe('InvitationActions', () => {
     await signIn(bob.did)
     const { doc } = await renderPage(await InvitationActions(props()))
     expect(pressed(doc)).toEqual(['✓ Interested'])
-    expect(doc.body.textContent).toContain('Remove your RSVP')
+    expect(doc.body.textContent).toContain('Delete your RSVP')
+    expect(
+      doc
+        .querySelector('form:not(:first-of-type) [data-message]')
+        ?.getAttribute('data-message')
+    ).toMatch(/Delete your RSVP\?/)
   })
 
   it('offers a signed-out visitor a sign-in as the recipient, and the plain event page', async () => {
@@ -128,6 +134,40 @@ describe('InvitationActions', () => {
     expect(doc.querySelector('button[name=status]')).toBeNull()
   })
 
+  it("shows the author the recipient's response, read-only, as the recipient would see the page", async () => {
+    await seedRsvp(bob, event, 'going')
+    await signIn(alice.did)
+    const { doc } = await renderPage(await InvitationActions(props()))
+    expect(pressed(doc)).toEqual(['✓ Going'])
+    const buttons = [...doc.querySelectorAll('button')]
+    expect(buttons.map((b) => text(b))).toEqual([
+      '✓ Going',
+      'Interested',
+      'Not going',
+    ])
+    expect(buttons.every((b) => b.hasAttribute('disabled'))).toBe(true)
+    expect(doc.querySelector('form')).toBeNull()
+    expect(doc.querySelector('input')).toBeNull()
+    expect(text(doc.body)).not.toContain('signed in as')
+    expect(text(doc.body)).not.toContain('Delete your RSVP')
+  })
+
+  it('shows the author no response while the recipient has not answered', async () => {
+    await signIn(alice.did)
+    const { doc } = await renderPage(await InvitationActions(props()))
+    expect(pressed(doc)).toEqual([])
+    expect(doc.querySelectorAll('button[disabled]')).toHaveLength(3)
+  })
+
+  it('lets an author who invited themselves answer as the recipient', async () => {
+    await signIn(alice.did)
+    const p = props()
+    p.invitation.value = { subject: p.event, recipient: alice.did } as never
+    const { doc } = await renderPage(await InvitationActions(p))
+    expect(doc.querySelectorAll('button[name=status]')).toHaveLength(3)
+    expect(doc.querySelector('button[disabled]')).toBeNull()
+  })
+
   it('falls back to the DID when the recipient has no handle', async () => {
     const ghost = 'did:plc:nohandlehere'
     const p = props()
@@ -139,7 +179,11 @@ describe('InvitationActions', () => {
 
 describe('InvitationPreviewBanner', () => {
   it('shows only to the invitation’s author', async () => {
-    const author = { author: alice.did, recipient: bob.did }
+    const author = {
+      author: alice.did,
+      rkey: invitation.rkey,
+      recipient: bob.did,
+    }
     expect(await InvitationPreviewBanner(author)).toBeNull()
     await signIn(bob.did)
     expect(await InvitationPreviewBanner(author)).toBeNull()
@@ -148,7 +192,12 @@ describe('InvitationPreviewBanner', () => {
     expect(text(doc.querySelector('[role=note]'))).toContain(
       'This is a preview of your invitation to Bob (@bob.test).'
     )
-    expect(text(doc.querySelector('button'))).toBe('Copy the link to share')
+    expect(text(doc.querySelector('button'))).toMatch(/^Copy/)
+    const edit = doc.querySelector('a')!
+    expect(text(edit)).toMatch(/^Edit/)
+    expect(edit.getAttribute('href')).toBe(
+      `/invitation/${alice.did}/${invitation.rkey}/edit`
+    )
   })
 
   it('leaves out the handle when the recipient has none', async () => {
@@ -156,6 +205,7 @@ describe('InvitationPreviewBanner', () => {
     const { doc } = await renderPage(
       await InvitationPreviewBanner({
         author: alice.did,
+        rkey: invitation.rkey,
         recipient: 'did:plc:nohandlehere',
       })
     )
@@ -173,7 +223,7 @@ describe('SessionFooter', () => {
     world.pathname = '/profile/alice.test'
     const { doc } = await renderPage(await SessionFooter())
     expect(text(doc.querySelector('footer'))).toContain(
-      'Logged in as Alice (@alice.test)'
+      'Signed in as Alice (@alice.test)'
     )
     expect(
       hidden(doc.querySelector('form[action="/oauth/logout"]')!).next
@@ -407,19 +457,49 @@ describe('invitation page', () => {
     expect(doc.querySelector('[role=note]')).toBeNull()
   })
 
+  it('says when the invitation was created, at the end of the line about who it is for', async () => {
+    const { doc } = await page()
+    const line = [...doc.querySelectorAll('p')].find((p) =>
+      text(p).includes('created this invitation')
+    )!
+    const created = line.querySelector('time')!
+    expect(text(created)).toMatch(/^[A-Z][a-z]{2} \d{1,2}, \d{4}$/)
+    expect(text(line)).toMatch(
+      /\(@bob\.test\) on [A-Z][a-z]{2} \d{1,2}, \d{4}\.$/
+    )
+  })
+
+  it('renders the invitation message as Markdown', async () => {
+    const inv = await seedInvitation(alice, event, bob, {
+      description: {
+        text: { markdown: 'Bring **a dish**!\n\n- salad\n- bread' },
+      },
+    })
+    const { doc } = await page(alice.did, inv.rkey)
+    expect(text(doc.querySelector('strong + *, p strong'))).not.toBe('')
+    expect([...doc.querySelectorAll('strong')].map((e) => text(e))).toContain(
+      'a dish'
+    )
+    expect([...doc.querySelectorAll('ul li')].map((e) => text(e))).toEqual([
+      'salad',
+      'bread',
+    ])
+  })
+
   it('works with a handle in the URL', async () => {
     const { doc, is404 } = await page('alice.test')
     expect(is404).toBe(false)
     expect(text(doc.querySelector('h1'))).toBe('Potluck')
   })
 
-  it('shows the author a preview banner and no RSVP buttons', async () => {
+  it('shows the author a preview banner and read-only RSVP buttons', async () => {
     await signIn(alice.did)
     const { doc } = await page()
     expect(text(doc.querySelector('[role=note]'))).toContain(
       'preview of your invitation to Bob'
     )
     expect(doc.querySelector('button[name=status]')).toBeNull()
+    expect(doc.querySelectorAll('button[disabled]')).toHaveLength(3)
   })
 
   it('shows the recipient the RSVP buttons', async () => {

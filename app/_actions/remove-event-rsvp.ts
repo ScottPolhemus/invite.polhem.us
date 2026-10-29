@@ -4,7 +4,7 @@ import { AtUri } from '@atproto/syntax'
 import { refresh, updateTag } from 'next/cache'
 
 import * as rsvp from '@/app/__generated__/lexicons/community/lexicon/calendar/rsvp'
-import { findMyRsvp } from '@/lib/atproto/rsvp'
+import { findMyRsvp } from '@/lib/atproto/rsvps'
 import { deleteRecord } from '@/lib/atproto/records'
 import { getClient } from '@/lib/atproto/session'
 

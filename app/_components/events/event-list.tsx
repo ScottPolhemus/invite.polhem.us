@@ -8,10 +8,10 @@ import {
   listRsvpedEvents,
   type EventOption,
 } from '@/lib/atproto/events'
-import { listInvitationsBy } from '@/lib/atproto/records'
+import { listInvitationsBy } from '@/lib/atproto/invitations'
 import type { InvitationValue } from '@/lib/data'
 
-import ConfirmSubmit from './confirm-submit'
+import ConfirmSubmit from '../ui/confirm-submit'
 import { deleteEventMessage } from './delete-event-message'
 
 type Role = 'host' | 'going' | 'interested'
@@ -159,7 +159,7 @@ export default async function EventList({
       )}
       {past.length > 0 && (
         <details className="mt-3">
-          <summary className="cursor-pointer">
+          <summary className="cursor-pointer font-bold">
             Past events ({past.length})
           </summary>
           <ul>{past.slice(0, MAX_LISTED).map(row)}</ul>

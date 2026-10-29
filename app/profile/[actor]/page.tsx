@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
-import EventList from '@/app/_components/event-list'
-import PageHeader from '@/app/_components/page-header'
+import EventList from '@/app/_components/events/event-list'
+import PageHeader from '@/app/_components/ui/page-header'
 import { resolveHandle, resolvePds } from '@/lib/atproto/identity'
 import { getDisplayName, resolveRepo } from '@/lib/data'
 

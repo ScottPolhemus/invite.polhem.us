@@ -2,21 +2,23 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
-import EventDetails from '@/app/_components/event-details'
-import InviteToEvent from '@/app/_components/invite-to-event'
-import PageHeader from '@/app/_components/page-header'
-import RsvpControl from '@/app/_components/rsvp-control'
+import EventDetails from '@/app/_components/events/event-details'
+import InviteToEvent from '@/app/_components/events/invite-to-event'
+import NoticeBanner from '@/app/_components/ui/notice-banner'
+import PageHeader from '@/app/_components/ui/page-header'
+import RsvpControl from '@/app/_components/rsvps/rsvp-control'
 import { getSessionDid } from '@/lib/atproto/session'
 import { getEvent, resolveRepo } from '@/lib/data'
 
 async function OwnerActions({ did, rkey }: { did: string; rkey: string }) {
   if ((await getSessionDid()) !== did) return null
   return (
-    <p className="mx-4">
+    <NoticeBanner>
+      You are the owner of this event.{' '}
       <Link href={`/event/${did}/${rkey}/edit`} className="underline">
         Edit event
       </Link>
-    </p>
+    </NoticeBanner>
   )
 }
 
@@ -35,27 +37,31 @@ async function EventContent({
   if (!event) notFound()
 
   return (
-    <>
-      <PageHeader heading={event.value.name} />
-      <EventDetails event={event.value} />
+    <div>
       <Suspense>
         <OwnerActions did={did} rkey={rkey} />
       </Suspense>
-      <Suspense>
-        <RsvpControl
-          eventUri={event.uri}
-          eventCid={event.cid}
-          returnTo={`/event/${did}/${rkey}`}
-        />
-      </Suspense>
-      <Suspense>
-        <InviteToEvent
-          eventUri={event.uri}
-          returnTo={`/event/${did}/${rkey}`}
-          error={typeof error === 'string' ? error : undefined}
-        />
-      </Suspense>
-    </>
+      <PageHeader heading={event.value.name} />
+      <div className="page-section">
+        <div className="page-content">
+          <Suspense>
+            <RsvpControl
+              eventUri={event.uri}
+              eventCid={event.cid}
+              returnTo={`/event/${did}/${rkey}`}
+            />
+          </Suspense>
+          <EventDetails event={event.value} />
+          <Suspense>
+            <InviteToEvent
+              eventUri={event.uri}
+              returnTo={`/event/${did}/${rkey}`}
+              error={typeof error === 'string' ? error : undefined}
+            />
+          </Suspense>
+        </div>
+      </div>
+    </div>
   )
 }
 

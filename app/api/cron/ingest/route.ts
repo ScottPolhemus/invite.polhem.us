@@ -1,6 +1,6 @@
 import { revalidateTag } from 'next/cache'
 
-import { runIngestCycle } from '@/lib/atproto/ingest'
+import { runIngestCycle } from '@/lib/atproto/sync'
 
 export const maxDuration = 60
 

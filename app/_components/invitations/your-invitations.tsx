@@ -2,7 +2,7 @@ import { AtUri } from '@atproto/syntax'
 import Link from 'next/link'
 
 import { deleteInvitation } from '@/app/_actions/delete-invitation'
-import { listInvitationsInvolving } from '@/lib/atproto/records'
+import { listInvitationsInvolving } from '@/lib/atproto/invitations'
 import { getSessionDid } from '@/lib/atproto/session'
 import {
   getDisplayName,
@@ -11,22 +11,14 @@ import {
   type InvitationValue,
 } from '@/lib/data'
 
-import ConfirmSubmit from './confirm-submit'
+import ConfirmSubmit from '../ui/confirm-submit'
+import LocalDate from '../ui/local-date'
 
 const RESPONSE_LABELS = {
   going: 'Going',
   interested: 'Interested',
   notgoing: 'Not going',
 } as const
-
-// A calendar date in UTC, so the server's timezone doesn't change what's shown
-const createdOn = (createdAt: string) =>
-  new Date(createdAt).toLocaleDateString('en-US', {
-    timeZone: 'UTC',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
 
 async function InvitationItem({
   did,
@@ -57,11 +49,10 @@ async function InvitationItem({
         </Link>
         <p className="flex flex-wrap items-center gap-2 text-sm">
           <span className="opacity-70">
-            {mine ? 'For' : 'From'} {who}
-          </span>
-          <span className="opacity-70">
-            Created{' '}
-            <time dateTime={value.createdAt}>{createdOn(value.createdAt)}</time>
+            Invited {mine ? '' : 'by '}
+            {who}
+            {' on '}
+            <LocalDate iso={value.createdAt} />{' '}
           </span>
           {response && (
             <span className="border-foreground rounded-full border px-2 py-0.5 text-xs">
@@ -97,7 +88,7 @@ export default async function YourInvitations() {
   const rows = await listInvitationsInvolving(did)
 
   return (
-    <section className="mx-4 mb-4 max-w-xl">
+    <section>
       <h2 className="mb-1 text-2xl">Your invitations</h2>
       <Link href="/invitation/new" className="mb-2 block underline">
         Create an invitation

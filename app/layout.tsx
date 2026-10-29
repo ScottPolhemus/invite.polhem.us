@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Suspense } from 'react'
 
-import SessionFooter from './_components/session-footer'
+import SessionFooter from './_components/auth/session-footer'
 import './globals.css'
 
 const geistSans = Geist({

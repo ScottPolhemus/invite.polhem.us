@@ -3,12 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { GET as cron } from '@/app/api/cron/ingest/route'
 import { collect, type JetstreamCommit } from '@/lib/atproto/jetstream'
-import { runIngestCycle } from '@/lib/atproto/ingest'
-import {
-  getStoredRecord,
-  listInvitationsBy,
-  upsertRecord,
-} from '@/lib/atproto/records'
+import { listInvitationsBy } from '@/lib/atproto/invitations'
+import { getStoredRecord, upsertRecord } from '@/lib/atproto/records'
+import { runIngestCycle } from '@/lib/atproto/sync'
 import { db } from '@/lib/db/client'
 import { ingestCursor } from '@/lib/db/schema'
 

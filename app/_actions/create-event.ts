@@ -5,8 +5,8 @@ import { AtUri } from '@atproto/syntax'
 import { redirect } from 'next/navigation'
 
 import * as event from '@/app/__generated__/lexicons/community/lexicon/calendar/event'
-import { CREATED_WITH } from '@/lib/atproto/created-with'
-import { readEventInput } from '@/lib/atproto/event-input'
+import { readEventInput } from '@/lib/atproto/events'
+import { CREATED_WITH } from '@/lib/atproto/records'
 import { getClient } from '@/lib/atproto/session'
 
 const back = (error: string) => redirect(`/event/new?error=${error}`)

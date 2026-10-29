@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
 
 import { PUBLIC_URL, getOAuthClient } from '@/lib/atproto/oauth-client'
-import { backfill } from '@/lib/atproto/backfill'
-import { safeRedirectPath } from '@/lib/atproto/redirect'
-import { setSessionCookie } from '@/lib/atproto/session'
+import { safeRedirectPath, setSessionCookie } from '@/lib/atproto/session'
+import { backfill } from '@/lib/atproto/sync'
 
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams

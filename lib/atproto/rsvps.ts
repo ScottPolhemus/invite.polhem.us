@@ -1,9 +1,17 @@
 import 'server-only'
 
 import { l, type Client } from '@atproto/lex'
-import type { DidString } from '@atproto/syntax'
+import { AtUri, type DidString } from '@atproto/syntax'
 
 import * as rsvp from '@/app/__generated__/lexicons/community/lexicon/calendar/rsvp'
+
+import {
+  deleteRecord,
+  getStoredRecord,
+  INVITATION,
+  upsertRecord,
+  type RecordValue,
+} from './records'
 
 /** Build a validated strongRef from untrusted form input */
 export function strongRef(uri: string, cid: string) {
@@ -53,4 +61,38 @@ export const findMyRsvp = (client: Client, eventUri: string) =>
 export function rsvpStatus(token: string): RsvpStatus | null {
   const status = token.split('#')[1]
   return RSVP_STATUSES.find((s) => s === status) ?? null
+}
+
+type Ref = { uri?: unknown }
+
+/**
+ * Store an RSVP if it answers an invitation we know, otherwise make sure none
+ * is stored. It counts only when the invitation is stored, was sent to the
+ * account that RSVPed, and is for the event the RSVP is about, so an RSVP can't
+ * attach itself to someone else's invitation. Returns what happened.
+ */
+export async function syncRsvp(
+  uri: string,
+  cid: string,
+  value: RecordValue,
+  seq?: bigint
+): Promise<'stored' | 'removed' | 'ignored'> {
+  const invitationUri = (value.invitation as Ref | undefined)?.uri
+  const eventUri = (value.subject as Ref | undefined)?.uri
+  const invitation =
+    typeof invitationUri === 'string'
+      ? await getStoredRecord(invitationUri)
+      : null
+  const sent = invitation?.value as
+    { recipient?: unknown; subject?: Ref } | undefined
+
+  const answers =
+    invitation?.collection === INVITATION &&
+    sent?.recipient === new AtUri(uri).hostname &&
+    typeof eventUri === 'string' &&
+    sent.subject?.uri === eventUri
+  if (!answers) return (await deleteRecord(uri)) ? 'removed' : 'ignored'
+
+  await upsertRecord(uri, cid, value, seq)
+  return 'stored'
 }

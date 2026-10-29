@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 
 import { createEventRsvp } from '@/app/_actions/create-event-rsvp'
 import { removeEventRsvp } from '@/app/_actions/remove-event-rsvp'
-import { findRsvp } from '@/lib/atproto/rsvp'
+import { findRsvp } from '@/lib/atproto/rsvps'
 import { readRsvpResponse } from '@/lib/data'
 
 import type { FakeAccount } from '../support/fake-atproto'

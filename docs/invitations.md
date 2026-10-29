@@ -17,3 +17,7 @@ Every event page has an **Invite someone to this event** section for signed-in v
 ## Choosing an event for a new invitation
 
 On the new-invitation form, the event list defaults to the events you've published plus the **upcoming events you've RSVP'd to** (going or interested; a "not going" RSVP is skipped), so you can invite someone to an event someone else is hosting. Both come straight from your own repo and the events' authors' PDSes: RSVPs are read from your RSVP records, newest 300 at most, and each event is fetched through the same cache as event pages. An RSVP'd event with no start date can't be called upcoming and is left out. Entering another account in "Events from" browses that account's events instead.
+
+## The invitation message
+
+The message on an invitation, and an event's description on event and invitation pages, is Markdown (headings, emphasis, lists, quotes, code and links). Web addresses written as plain text are linked too, and single line breaks are kept. Because anyone can write an invitation, it is rendered defensively: raw HTML in the text is shown as text, unsafe link addresses such as `javascript:` are not linked, links open in a new tab with `rel="noopener noreferrer nofollow"`, and images are left out so a message can't make the viewer's browser fetch from an address of the author's choosing.

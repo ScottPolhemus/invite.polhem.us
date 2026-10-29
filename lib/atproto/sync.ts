@@ -1,19 +1,41 @@
 import 'server-only'
 
-import { AtUri } from '@atproto/syntax'
+import { lexToJson } from '@atproto/lex'
+import { AtUri, type DidString } from '@atproto/syntax'
 import { eq } from 'drizzle-orm'
 
 import { db } from '@/lib/db/client'
 import { ingestCursor } from '@/lib/db/schema'
 
-import { INVITATION, RSVP } from './collections'
+import { getPdsClient } from './identity'
+import { deleteInvitationRecord } from './invitations'
 import { collect } from './jetstream'
-import {
-  deleteInvitationRecord,
-  deleteRecord,
-  syncRsvp,
-  upsertRecord,
-} from './records'
+import { deleteRecord, INVITATION, RSVP, upsertRecord } from './records'
+import { syncRsvp } from './rsvps'
+
+/** Pull a user's invitations from their PDS */
+export async function backfill(did: DidString) {
+  const client = await getPdsClient(did)
+  let stored = 0
+  let cursor: string | undefined
+  do {
+    const { body } = await client.listRecords(INVITATION, {
+      repo: did,
+      limit: 100,
+      cursor,
+    })
+    for (const r of body.records) {
+      await upsertRecord(
+        r.uri,
+        r.cid,
+        lexToJson(r.value) as Record<string, unknown>
+      )
+      stored++
+    }
+    cursor = body.cursor
+  } while (cursor)
+  return stored
+}
 
 const CURSOR_ID = 'jetstream'
 

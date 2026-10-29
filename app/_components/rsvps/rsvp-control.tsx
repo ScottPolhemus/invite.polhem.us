@@ -1,7 +1,7 @@
 import { getClient, getSessionDid } from '@/lib/atproto/session'
 import { readRsvpResponse } from '@/lib/data'
 
-import AuthStatus from './auth-status'
+import AuthStatus from '../auth/auth-status'
 import RsvpButtons from './rsvp-buttons'
 
 /**
@@ -25,13 +25,19 @@ export default async function RsvpControl({
   if (!client?.did) {
     // A cookie with no restorable session is an expired sign-in, not a signed-out visitor
     return (
-      <AuthStatus expired={!!(await getSessionDid())} returnTo={returnTo} />
+      <AuthStatus
+        heading="Sign in to RSVP for this event or invite a friend!"
+        expired={!!(await getSessionDid())}
+        returnTo={returnTo}
+      />
     )
   }
 
   // Read fresh from their own repo, so it matches the record exactly
   const current = await readRsvpResponse(client.did, eventUri)
   return (
-    <RsvpButtons event={{ uri: eventUri, cid: eventCid }} current={current} />
+    <>
+      <RsvpButtons event={{ uri: eventUri, cid: eventCid }} current={current} />
+    </>
   )
 }

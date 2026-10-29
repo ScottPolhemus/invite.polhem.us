@@ -5,14 +5,14 @@ import { Suspense } from 'react'
 
 import { deleteEvent } from '@/app/_actions/delete-event'
 import { updateEvent } from '@/app/_actions/update-event'
-import AuthStatus from '@/app/_components/auth-status'
-import ConfirmSubmit from '@/app/_components/confirm-submit'
-import { deleteEventMessage } from '@/app/_components/delete-event-message'
-import EventForm from '@/app/_components/event-form'
-import PageHeader from '@/app/_components/page-header'
-import { EVENT } from '@/lib/atproto/collections'
-import { eventDefaults } from '@/lib/atproto/event-input'
-import { fetchRecord, listInvitationsBy } from '@/lib/atproto/records'
+import AuthStatus from '@/app/_components/auth/auth-status'
+import ConfirmSubmit from '@/app/_components/ui/confirm-submit'
+import { deleteEventMessage } from '@/app/_components/events/delete-event-message'
+import EventForm from '@/app/_components/events/event-form'
+import PageHeader from '@/app/_components/ui/page-header'
+import { eventDefaults } from '@/lib/atproto/events'
+import { listInvitationsBy } from '@/lib/atproto/invitations'
+import { EVENT, fetchRecord } from '@/lib/atproto/records'
 import { getSessionDid } from '@/lib/atproto/session'
 import { resolveRepo, type InvitationValue } from '@/lib/data'
 
@@ -55,7 +55,7 @@ async function EditEvent({
         error={typeof error === 'string' ? error : undefined}
         submitLabel="Save changes"
       />
-      <div className="mx-4 mt-6 flex max-w-xl items-center gap-4">
+      <div className="mt-4 flex max-w-xl items-center gap-4">
         <Link href={`/event/${did}/${rkey}`} className="underline">
           Cancel
         </Link>
@@ -80,9 +80,16 @@ export default function EditEventPage(
   return (
     <>
       <PageHeader heading={'Edit event'} />
-      <Suspense>
-        <EditEvent params={props.params} searchParams={props.searchParams} />
-      </Suspense>
+      <div className="page-section">
+        <div className="page-content">
+          <Suspense>
+            <EditEvent
+              params={props.params}
+              searchParams={props.searchParams}
+            />
+          </Suspense>
+        </div>
+      </div>
     </>
   )
 }

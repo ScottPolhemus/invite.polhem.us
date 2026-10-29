@@ -3,7 +3,7 @@ import 'server-only'
 import { Jetstream, parseRawRecord } from '@bsky/jetstream'
 import { lexToJson } from '@atproto/lex'
 
-import { INVITATION, RSVP } from './collections'
+import { INVITATION, RSVP } from './records'
 
 export type JetstreamCommit = {
   did: string

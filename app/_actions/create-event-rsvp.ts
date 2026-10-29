@@ -4,10 +4,13 @@ import { AtUri } from '@atproto/syntax'
 import { refresh, updateTag } from 'next/cache'
 
 import * as rsvp from '@/app/__generated__/lexicons/community/lexicon/calendar/rsvp'
-import { RSVP } from '@/lib/atproto/collections'
-import { CREATED_WITH } from '@/lib/atproto/created-with'
-import { RSVP_STATUSES, findMyRsvp, strongRef } from '@/lib/atproto/rsvp'
-import { syncRsvp } from '@/lib/atproto/records'
+import { CREATED_WITH, RSVP } from '@/lib/atproto/records'
+import {
+  findMyRsvp,
+  RSVP_STATUSES,
+  strongRef,
+  syncRsvp,
+} from '@/lib/atproto/rsvps'
 import { getClient } from '@/lib/atproto/session'
 
 /**

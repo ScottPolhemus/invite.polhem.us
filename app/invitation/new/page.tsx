@@ -2,9 +2,9 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 
 import { createInvitation } from '@/app/_actions/create-invitation'
-import AuthStatus from '@/app/_components/auth-status'
-import InvitationForm from '@/app/_components/invitation-form'
-import PageHeader from '@/app/_components/page-header'
+import AuthStatus from '@/app/_components/auth/auth-status'
+import InvitationForm from '@/app/_components/invitations/invitation-form'
+import PageHeader from '@/app/_components/ui/page-header'
 import { listEvents, listUpcomingRsvpedEvents } from '@/lib/atproto/events'
 import { getClient, getSessionDid } from '@/lib/atproto/session'
 
@@ -39,13 +39,6 @@ async function NewInvitation({
         error={typeof error === 'string' ? error : undefined}
         submitLabel="Create invitation"
       />
-      <p className="mx-4 mt-4 max-w-xl text-sm">
-        Not hosting yet?{' '}
-        <Link href="/event/new" className="underline">
-          Create an event
-        </Link>{' '}
-        first.
-      </p>
     </>
   )
 }
@@ -55,11 +48,15 @@ export default function NewInvitationPage(props: PageProps<'/invitation/new'>) {
     <>
       <PageHeader
         heading={'New invitation'}
-        subHeading={'Invite someone to one of your events'}
+        subHeading={'Invite someone to an event'}
       />
-      <Suspense>
-        <NewInvitation searchParams={props.searchParams} />
-      </Suspense>
+      <div className="page-section">
+        <div className="page-content">
+          <Suspense>
+            <NewInvitation searchParams={props.searchParams} />
+          </Suspense>
+        </div>
+      </div>
     </>
   )
 }

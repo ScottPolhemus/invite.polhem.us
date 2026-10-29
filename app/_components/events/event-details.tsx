@@ -1,5 +1,6 @@
 import type { EventValue } from '@/lib/data'
 
+import Markdown from '../ui/markdown'
 import LocalTime from './local-time'
 
 const MODES: Record<string, string> = {
@@ -84,7 +85,14 @@ function Row({
 }
 
 /** The basics of an event: when, where, how, any links, and what it is about */
-export default function EventDetails({ event }: { event: EventValue }) {
+export default function EventDetails({
+  event,
+  descriptionOpen = true,
+}: {
+  event: EventValue
+  /** Whether the description starts expanded (it can always be collapsed) */
+  descriptionOpen?: boolean
+}) {
   const raw = event as EventValue & {
     mode?: string
     status?: string
@@ -105,7 +113,7 @@ export default function EventDetails({ event }: { event: EventValue }) {
   return (
     <section
       aria-label="Event details"
-      className="border-foreground m-4 border p-4 font-sans"
+      className="border-foreground my-4 border p-4 font-sans"
     >
       <dl className="flex flex-col gap-2">
         {status && (
@@ -161,7 +169,10 @@ export default function EventDetails({ event }: { event: EventValue }) {
         )}
       </dl>
       {event.description && (
-        <p className="mt-3 whitespace-pre-line">{event.description}</p>
+        <details open={descriptionOpen} className="mt-3">
+          <summary className="cursor-pointer font-bold">Description</summary>
+          <Markdown>{event.description}</Markdown>
+        </details>
       )}
     </section>
   )

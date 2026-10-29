@@ -41,9 +41,9 @@ export default function CopyLinkButton({
       aria-live="polite"
     >
       {state === 'copied'
-        ? 'Link copied to clipboard'
+        ? 'Link copied!'
         : state === 'failed'
-          ? 'Couldn’t copy the link'
+          ? 'Unable to copy, try sharing the current page from your browser!'
           : children}
     </button>
   )

@@ -4,10 +4,10 @@ import { lexToJson } from '@atproto/lex'
 import { AtUri, type DidString } from '@atproto/syntax'
 import { cacheLife, cacheTag } from 'next/cache'
 
-import { EVENT, INVITATION } from '@/lib/atproto/collections'
+import { getInvitationRecord } from '@/lib/atproto/invitations'
+import { EVENT, fetchRecord, INVITATION } from '@/lib/atproto/records'
+import { findRsvp, rsvpStatus } from '@/lib/atproto/rsvps'
 import { getPdsClient, resolveDid, resolveHandle } from '@/lib/atproto/identity'
-import { fetchRecord, getInvitationRecord } from '@/lib/atproto/records'
-import { findRsvp, rsvpStatus } from '@/lib/atproto/rsvp'
 
 export type StrongRef = { uri: string; cid: string }
 
@@ -89,9 +89,13 @@ export async function getDisplayName(did: string) {
 /**
  * How to name an account for people: its display name, plus its handle when
  * that adds something. getDisplayName falls back to the handle (or the DID), so
- * the handle is left out when the name already is it.
+ * the handle is left out when the name already is it. Cached like the name:
+ * resolving a handle reads the clock, which a page can't do while prerendering.
  */
 export async function getAccountLabel(did: string) {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(`profile:${did}`)
   const [name, handle] = await Promise.all([
     getDisplayName(did),
     resolveHandle(did).catch(() => undefined),

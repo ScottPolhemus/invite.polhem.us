@@ -5,11 +5,9 @@ import { AtUri } from '@atproto/syntax'
 import { redirect } from 'next/navigation'
 
 import * as invitation from '@/app/__generated__/lexicons/us/polhem/invite/invitation'
-import { INVITATION } from '@/lib/atproto/collections'
-import { readInvitationInput } from '@/lib/atproto/invitation-input'
-import { safeRedirectPath } from '@/lib/atproto/redirect'
-import { upsertRecord } from '@/lib/atproto/records'
-import { getClient } from '@/lib/atproto/session'
+import { readInvitationInput } from '@/lib/atproto/invitations'
+import { INVITATION, upsertRecord } from '@/lib/atproto/records'
+import { getClient, safeRedirectPath } from '@/lib/atproto/session'
 
 /**
  * Create an invitation. A form that isn't the new-invitation page (such as the

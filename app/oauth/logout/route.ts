@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
 
 import { PUBLIC_URL, getOAuthClient } from '@/lib/atproto/oauth-client'
-import { safeRedirectPath } from '@/lib/atproto/redirect'
-import { clearSessionCookie, getSessionDid } from '@/lib/atproto/session'
+import {
+  clearSessionCookie,
+  getSessionDid,
+  safeRedirectPath,
+} from '@/lib/atproto/session'
 
 export async function POST(request: Request) {
   const next = safeRedirectPath((await request.formData()).get('next'))

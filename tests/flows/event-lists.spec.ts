@@ -1,7 +1,7 @@
 import { createElement } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import EventList from '@/app/_components/event-list'
+import EventList from '@/app/_components/events/event-list'
 import {
   isUpcoming,
   listEvents,
@@ -23,7 +23,7 @@ import {
 import { world } from '../support/world'
 
 // the delete button's confirmation text is a prop; surface it so specs can read it
-vi.mock('@/app/_components/confirm-submit', () => ({
+vi.mock('@/app/_components/ui/confirm-submit', () => ({
   default: ({ message, children }: { message: string; children: unknown }) =>
     createElement('button', { 'data-message': message }, children as never),
 }))

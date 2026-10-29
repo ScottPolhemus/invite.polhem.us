@@ -1,6 +1,6 @@
 import { getSessionDid } from '@/lib/atproto/session'
 
-import HandleTypeahead from './handle-typeahead'
+import HandleTypeahead from '../ui/handle-typeahead'
 
 /**
  * The sign-in form, for a visitor who isn't signed in (nothing when they are:
@@ -14,25 +14,19 @@ import HandleTypeahead from './handle-typeahead'
 export default async function AuthStatus({
   expired = false,
   returnTo,
+  heading,
 }: {
   expired?: boolean
   returnTo?: string
+  heading?: string
 } = {}) {
   const did = await getSessionDid()
   // Signed in: the footer on every page already shows who you are and signs you out
   if (did && !expired) return null
   return (
     <>
-      {expired && (
-        <p role="status" className="mx-4 mb-2 text-sm">
-          Your sign-in has expired. Sign in again to continue.
-        </p>
-      )}
-      <form
-        action="/oauth/login"
-        method="post"
-        className="mx-4 mb-4 flex gap-2"
-      >
+      {heading && <p className="mb-2 text-center">{heading}</p>}
+      <form action="/oauth/login" method="post" className="mb-4 flex gap-2">
         {returnTo && <input type="hidden" name="next" value={returnTo} />}
         <HandleTypeahead
           id="handle"
@@ -46,6 +40,11 @@ export default async function AuthStatus({
           Sign in
         </button>
       </form>
+      {expired && (
+        <p role="status" className="mx-4 mt-2 text-sm">
+          Your sign-in has expired. Sign in again to continue.
+        </p>
+      )}
     </>
   )
 }

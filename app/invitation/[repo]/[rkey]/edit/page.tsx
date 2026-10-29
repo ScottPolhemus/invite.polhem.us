@@ -5,11 +5,11 @@ import { Suspense } from 'react'
 
 import { deleteInvitation } from '@/app/_actions/delete-invitation'
 import { updateInvitation } from '@/app/_actions/update-invitation'
-import AuthStatus from '@/app/_components/auth-status'
-import ConfirmSubmit from '@/app/_components/confirm-submit'
-import PageHeader from '@/app/_components/page-header'
+import AuthStatus from '@/app/_components/auth/auth-status'
+import ConfirmSubmit from '@/app/_components/ui/confirm-submit'
+import PageHeader from '@/app/_components/ui/page-header'
 import { resolveHandle } from '@/lib/atproto/identity'
-import { getInvitationRecord } from '@/lib/atproto/records'
+import { getInvitationRecord } from '@/lib/atproto/invitations'
 import { getSessionDid } from '@/lib/atproto/session'
 import {
   getDisplayName,
@@ -51,7 +51,7 @@ async function EditInvitation({
 
   return (
     <>
-      <div className="mx-4 flex max-w-xl flex-col gap-4">
+      <div className="flex flex-col gap-4">
         {error === 'missing' && (
           <p role="alert">That invitation no longer exists.</p>
         )}
@@ -83,10 +83,7 @@ async function EditInvitation({
         </p>
       </div>
 
-      <form
-        action={updateInvitation}
-        className="mx-4 mt-4 flex max-w-xl flex-col gap-4"
-      >
+      <form action={updateInvitation} className="mt-4 flex flex-col gap-4">
         <input type="hidden" name="rkey" value={rkey} />
         <label className="flex flex-col gap-1">
           Message (Markdown, optional)
@@ -102,7 +99,7 @@ async function EditInvitation({
         </button>
       </form>
 
-      <div className="mx-4 mt-6 flex max-w-xl items-center gap-4">
+      <div className="mt-6 flex items-center gap-4">
         <Link href={viewPath} className="underline">
           Cancel
         </Link>
@@ -127,12 +124,16 @@ export default function EditInvitationPage(
   return (
     <>
       <PageHeader heading={'Edit invitation'} />
-      <Suspense>
-        <EditInvitation
-          params={props.params}
-          searchParams={props.searchParams}
-        />
-      </Suspense>
+      <div className="page-section">
+        <div className="page-content">
+          <Suspense>
+            <EditInvitation
+              params={props.params}
+              searchParams={props.searchParams}
+            />
+          </Suspense>
+        </div>
+      </div>
     </>
   )
 }

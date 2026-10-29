@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { createEvent } from '@/app/_actions/create-event'
 import { deleteEvent } from '@/app/_actions/delete-event'
 import { updateEvent } from '@/app/_actions/update-event'
-import { eventDefaults } from '@/lib/atproto/event-input'
+import { eventDefaults } from '@/lib/atproto/events'
 
 import type { FakeAccount } from '../support/fake-atproto'
 import { EVENT, eventRecord, seedEvent } from '../support/fixtures'

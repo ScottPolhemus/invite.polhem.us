@@ -4,8 +4,7 @@ import { updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import * as invitation from '@/app/__generated__/lexicons/us/polhem/invite/invitation'
-import { INVITATION } from '@/lib/atproto/collections'
-import { upsertRecord } from '@/lib/atproto/records'
+import { INVITATION, upsertRecord } from '@/lib/atproto/records'
 import { getClient } from '@/lib/atproto/session'
 
 /**

@@ -1,6 +1,9 @@
+import Link from 'next/link'
+
 import { getSessionDid } from '@/lib/atproto/session'
 import { getAccountLabel } from '@/lib/data'
 
+import NoticeBanner from '../ui/notice-banner'
 import CopyLinkButton from './copy-link-button'
 
 /**
@@ -9,10 +12,12 @@ import CopyLinkButton from './copy-link-button'
  */
 export default async function InvitationPreviewBanner({
   author,
+  rkey,
   recipient,
 }: {
   /** The DID whose repo holds the invitation */
   author: string
+  rkey: string
   recipient: string
 }) {
   if ((await getSessionDid()) !== author) return null
@@ -20,13 +25,14 @@ export default async function InvitationPreviewBanner({
   const { name, handle } = await getAccountLabel(recipient)
 
   return (
-    <div
-      role="note"
-      className="border-foreground bg-foreground/10 mx-4 mt-4 rounded border p-3 text-sm"
-    >
+    <NoticeBanner>
       This is a preview of your invitation to <strong>{name}</strong>
       {handle && ` (@${handle})`}.{' '}
-      <CopyLinkButton>Copy the link to share</CopyLinkButton>
-    </div>
+      <CopyLinkButton>Copy shareable link</CopyLinkButton>
+      {' | '}
+      <Link href={`/invitation/${author}/${rkey}/edit`} className="underline">
+        Edit invitation
+      </Link>
+    </NoticeBanner>
   )
 }

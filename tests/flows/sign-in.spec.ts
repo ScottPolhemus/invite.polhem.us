@@ -4,7 +4,7 @@ import { GET as callback } from '@/app/oauth/callback/route'
 import { POST as login } from '@/app/oauth/login/route'
 import { POST as logout } from '@/app/oauth/logout/route'
 import { getClient, getSessionDid } from '@/lib/atproto/session'
-import { listInvitationsBy } from '@/lib/atproto/records'
+import { listInvitationsBy } from '@/lib/atproto/invitations'
 
 import type { FakeAccount } from '../support/fake-atproto'
 import { INVITATION, daysFromNow, seedEvent } from '../support/fixtures'

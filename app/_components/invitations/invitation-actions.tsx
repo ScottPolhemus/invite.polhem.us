@@ -9,17 +9,21 @@ import {
   type InvitationValue,
 } from '@/lib/data'
 
-import RsvpButtons from './rsvp-buttons'
+import RsvpButtons from '../rsvps/rsvp-buttons'
 
 /**
- * What the visitor can do with the invitation: the recipient RSVPs; anyone else
+ * What the visitor can do with the invitation: the recipient RSVPs; its author
+ * sees the recipient's response without being able to change it; anyone else
  * is offered a sign-in as the recipient (if signed out) and the plain event page.
  */
 export default async function InvitationActions({
+  author,
   invitation,
   event,
   returnTo,
 }: {
+  /** The DID whose repo holds the invitation */
+  author: string
   invitation: { uri: string; cid: string; value: InvitationValue }
   event: { uri: string; cid: string }
   returnTo: string
@@ -34,6 +38,12 @@ export default async function InvitationActions({
     )
   }
 
+  if (sessionDid === author) {
+    // The author sees the page as the recipient does, but can't answer for them
+    const current = await readRsvpResponse(recipient, event.uri)
+    return <RsvpButtons event={event} current={current} readOnly />
+  }
+
   const [name, handle] = await Promise.all([
     getDisplayName(recipient),
     resolveHandle(recipient).catch(() => undefined),
@@ -41,7 +51,7 @@ export default async function InvitationActions({
   const { did: eventDid, rkey: eventRkey } = new AtUri(event.uri)
 
   return (
-    <div className="mx-4 flex flex-col gap-3">
+    <div className="mx-4 flex flex-col gap-4 text-center">
       {sessionDid ? (
         <form
           action="/oauth/logout"
@@ -61,14 +71,14 @@ export default async function InvitationActions({
           <input type="hidden" name="handle" value={handle ?? recipient} />
           <input type="hidden" name="next" value={returnTo} />
           <button className="bg-foreground text-background rounded-full px-4 py-2">
-            Sign in as {handle ? `@${handle}` : recipient}
+            Sign in as {handle ? `@${handle}` : recipient} to respond
           </button>
         </form>
       )}
-      <p>
+      <p className="text-sm">
         Not {name}?{' '}
         <Link href={`/event/${eventDid}/${eventRkey}`} className="underline">
-          Click here to view the event details.
+          Visit the event page to RSVP or invite a friend
         </Link>
       </p>
     </div>

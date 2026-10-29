@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import EventDetails from '@/app/_components/event-details'
+import EventDetails from '@/app/_components/events/event-details'
 import EventPage from '@/app/event/[repo]/[rkey]/page'
 import InvitationPage from '@/app/invitation/[repo]/[rkey]/page'
 
@@ -13,7 +13,11 @@ import {
   seedInvitation,
   text,
 } from '../support/fixtures'
+import { signIn } from '../support/helpers'
 import { world } from '../support/world'
+
+// Node.DOCUMENT_POSITION_FOLLOWING: the other node comes later in the document
+const DOCUMENT_POSITION_FOLLOWING = 4
 
 const details = async (over: Record<string, unknown>) => {
   const { doc } = await renderPage(
@@ -55,7 +59,7 @@ describe('EventDetails', () => {
       Attendance: 'In person',
       Where: 'The Hall, 1 Main St, Portland, OR 97201, US',
     })
-    expect(text(section.querySelector('p'))).toBe('Bring a dish.')
+    expect(text(section.querySelector('details p'))).toBe('Bring a dish.')
     expect(section.querySelector('time')!.getAttribute('dateTime')).toBe(
       '2026-11-05T18:30:00.000Z'
     )
@@ -145,10 +149,46 @@ describe('EventDetails', () => {
     expect(rows(section)).not.toHaveProperty('Where')
   })
 
+  it('puts the description in a collapsible block, open unless told otherwise', async () => {
+    const open = await details({ description: 'Bring a dish.' })
+    expect(open.querySelector('details')!.hasAttribute('open')).toBe(true)
+    expect(text(open.querySelector('summary'))).toBe('Description')
+
+    const { doc } = await renderPage(
+      <EventDetails
+        event={{ name: 'Potluck', description: 'Bring a dish.' } as never}
+        descriptionOpen={false}
+      />
+    )
+    const closed = doc.querySelector('details')!
+    expect(closed.hasAttribute('open')).toBe(false)
+    expect(text(closed)).toContain('Bring a dish.')
+  })
+
+  it('renders the description as Markdown, linking plain web addresses', async () => {
+    const section = await details({
+      description: 'Bring **a dish**\nInfo: https://example.com/potluck',
+    })
+    const body = section.querySelector('details')!
+    expect(text(body.querySelector('strong'))).toBe('a dish')
+    expect(body.querySelectorAll('br')).toHaveLength(1)
+    expect(body.querySelector('a')!.getAttribute('href')).toBe(
+      'https://example.com/potluck'
+    )
+  })
+
+  it('shows HTML in a description as text', async () => {
+    const section = await details({
+      description: '<img src=x onerror=alert(1)>',
+    })
+    expect(section.querySelector('img')).toBeNull()
+    expect(text(section)).toContain('<img src=x')
+  })
+
   it('leaves out whatever the event does not say', async () => {
     const section = await details({})
     expect(rows(section)).toEqual({})
-    expect(section.querySelector('p')).toBeNull()
+    expect(section.querySelector('details')).toBeNull()
   })
 
   it('shows a start with no end', async () => {
@@ -186,6 +226,9 @@ describe('pages', () => {
     )
     expect(rows(section(doc)!).When).toBe('Nov 5, 2026, 6:30 PM UTC')
     expect(text(doc.body).split('Bring a dish.')).toHaveLength(2)
+    expect(section(doc)!.querySelector('details')!.hasAttribute('open')).toBe(
+      true
+    )
   })
 
   it('the invitation page shows the details, and the message beside the event description', async () => {
@@ -203,6 +246,37 @@ describe('pages', () => {
     )
     expect(rows(section(doc)!).Attendance).toBe('Online')
     expect(text(section(doc))).toContain('Bring a dish.')
+    expect(section(doc)!.querySelector('details')!.hasAttribute('open')).toBe(
+      false
+    )
     expect(text(doc.body)).toContain('Hope you can make it!')
+  })
+
+  it('the event page tells its owner so in a banner above the title, with a link to edit', async () => {
+    const event = await seedEvent(alice)
+    await signIn(alice.did)
+    const { doc } = await renderPage(
+      EventPage(pageProps({ repo: alice.did, rkey: event.rkey }) as never)
+    )
+    const banner = doc.querySelector('[role=note]')!
+    expect(text(banner)).toContain('You are the owner of this event.')
+    expect(banner.querySelector('a')!.getAttribute('href')).toBe(
+      `/event/${alice.did}/${event.rkey}/edit`
+    )
+    expect(
+      banner.compareDocumentPosition(doc.querySelector('h1')!) &
+        DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy()
+  })
+
+  it('the event page shows no owner banner to anyone else', async () => {
+    const event = await seedEvent(alice)
+    for (const who of [null, bob]) {
+      if (who) await signIn(who.did)
+      const { doc } = await renderPage(
+        EventPage(pageProps({ repo: alice.did, rkey: event.rkey }) as never)
+      )
+      expect(doc.querySelector('[role=note]')).toBeNull()
+    }
   })
 })

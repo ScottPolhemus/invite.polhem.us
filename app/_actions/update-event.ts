@@ -4,8 +4,7 @@ import { updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import * as event from '@/app/__generated__/lexicons/community/lexicon/calendar/event'
-import { readEventInput } from '@/lib/atproto/event-input'
-import { mergeEvent } from '@/lib/atproto/event-merge'
+import { mergeEvent, readEventInput } from '@/lib/atproto/events'
 import { getClient } from '@/lib/atproto/session'
 
 /**

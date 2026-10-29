@@ -5,10 +5,9 @@ import { refresh, updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import * as invitation from '@/app/__generated__/lexicons/us/polhem/invite/invitation'
-import { INVITATION } from '@/lib/atproto/collections'
-import { safeRedirectPath } from '@/lib/atproto/redirect'
-import { deleteInvitationRecord } from '@/lib/atproto/records'
-import { getClient } from '@/lib/atproto/session'
+import { deleteInvitationRecord } from '@/lib/atproto/invitations'
+import { INVITATION } from '@/lib/atproto/records'
+import { getClient, safeRedirectPath } from '@/lib/atproto/session'
 
 /** Delete one of the signed-in user's own invitations; the client only ever writes to their own repo */
 export async function deleteInvitation(formData: FormData) {

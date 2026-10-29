@@ -1,4 +1,4 @@
-import type { EventDefaults } from '@/lib/atproto/event-input'
+import type { EventDefaults } from '@/lib/atproto/events'
 
 import DateTimeInput from './datetime-input'
 
@@ -40,7 +40,7 @@ export default function EventForm({
   submitLabel: string
 }) {
   return (
-    <form action={action} className="mx-4 flex max-w-xl flex-col gap-4">
+    <form action={action} className="flex flex-col gap-4">
       {Object.entries(hidden ?? {}).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}

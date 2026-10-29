@@ -4,12 +4,12 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { createInvitation } from '@/app/_actions/create-invitation'
 import { deleteInvitation } from '@/app/_actions/delete-invitation'
 import { updateInvitation } from '@/app/_actions/update-invitation'
-import { backfill } from '@/lib/atproto/backfill'
 import {
   getInvitationRecord,
-  getStoredRecord,
   listInvitationsBy,
-} from '@/lib/atproto/records'
+} from '@/lib/atproto/invitations'
+import { getStoredRecord } from '@/lib/atproto/records'
+import { backfill } from '@/lib/atproto/sync'
 
 import type { FakeAccount } from '../support/fake-atproto'
 import {

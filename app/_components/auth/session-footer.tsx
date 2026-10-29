@@ -11,10 +11,10 @@ export default async function SessionFooter() {
   const { name, handle } = await getAccountLabel(did)
 
   return (
-    <footer className="mt-auto px-4 pt-8 pb-4">
-      <div className="border-foreground flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-3 text-sm">
+    <footer className="border-foreground mx-4 mt-auto border-t px-4 py-3">
+      <div className="page-content flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
         <span className="min-w-0 truncate">
-          Logged in as <strong>{name}</strong>
+          Signed in as <strong>{name}</strong>
           {handle && ` (@${handle})`}
         </span>
         <SignOutForm />

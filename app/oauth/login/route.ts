@@ -5,7 +5,7 @@ import {
   PUBLIC_URL,
   getOAuthClient,
 } from '@/lib/atproto/oauth-client'
-import { safeRedirectPath } from '@/lib/atproto/redirect'
+import { safeRedirectPath } from '@/lib/atproto/session'
 
 export async function POST(request: Request) {
   const form = await request.formData()

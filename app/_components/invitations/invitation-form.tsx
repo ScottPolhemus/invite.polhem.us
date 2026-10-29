@@ -1,7 +1,7 @@
 import type { EventOption } from '@/lib/atproto/events'
 
 import EventPicker from './event-picker'
-import HandleTypeahead from './handle-typeahead'
+import HandleTypeahead from '../ui/handle-typeahead'
 
 export const INVITATION_ERRORS: Record<string, string> = {
   auth: 'Sign in to create an invitation.',
@@ -24,7 +24,7 @@ export default function InvitationForm({
   submitLabel: string
 }) {
   return (
-    <form action={action} className="mx-4 flex max-w-xl flex-col gap-4">
+    <form action={action} className="flex flex-col gap-4">
       {error && INVITATION_ERRORS[error] && (
         <p role="alert">{INVITATION_ERRORS[error]}</p>
       )}
@@ -40,7 +40,7 @@ export default function InvitationForm({
           className={field}
         />
         <span className="text-sm opacity-70">
-          Search by handle or name, or enter a DID.
+          Search by username or enter a DID
         </span>
       </div>
 

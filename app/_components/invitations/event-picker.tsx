@@ -5,7 +5,8 @@ import { useState } from 'react'
 import type { EventOption } from '@/lib/atproto/events'
 
 import EventCombobox from './event-combobox'
-import HandleTypeahead from './handle-typeahead'
+import HandleTypeahead from '../ui/handle-typeahead'
+import Link from 'next/link'
 
 const field = 'border-foreground w-full rounded border p-2'
 
@@ -48,10 +49,15 @@ export default function EventPicker({
           id="event-owner"
           name="eventOwner"
           required={false}
-          placeholder="Leave blank for your events and ones you've RSVP'd to"
+          placeholder={`you.bsky.social`}
           className={field}
           onCommit={lookUp}
         />
+        <p className="text-sm">
+          <span className="opacity-70">
+            Leave blank for your events and ones you’ve RSVP’d to
+          </span>
+        </p>
       </div>
 
       <div className="flex flex-col gap-1">
@@ -76,6 +82,12 @@ export default function EventPicker({
             className={field}
           />
         )}
+        <p className="text-sm">
+          <span className="opacity-70">Starting from scratch?</span>{' '}
+          <Link href="/event/new" className="underline">
+            Create a new event
+          </Link>
+        </p>
       </div>
     </div>
   )

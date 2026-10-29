@@ -1,8 +1,8 @@
 import { createInvitation } from '@/app/_actions/create-invitation'
 import { getSessionDid } from '@/lib/atproto/session'
 
-import HandleTypeahead from './handle-typeahead'
-import { INVITATION_ERRORS } from './invitation-form'
+import HandleTypeahead from '../ui/handle-typeahead'
+import { INVITATION_ERRORS } from '../invitations/invitation-form'
 
 const field = 'border-foreground w-full rounded border p-2'
 
@@ -24,7 +24,7 @@ export default async function InviteToEvent({
   if (!(await getSessionDid())) return null
 
   return (
-    <section id="invite" className="mx-4 mb-4 max-w-xl">
+    <section id="invite">
       <h2 className="mb-2 text-2xl">Invite someone to this event</h2>
       <form action={createInvitation} className="flex flex-col gap-4">
         <input type="hidden" name="eventUri" value={eventUri} />
@@ -42,7 +42,7 @@ export default async function InviteToEvent({
             className={field}
           />
           <span className="text-sm opacity-70">
-            Search by handle or name, or enter a DID.
+            Search by username or enter a DID
           </span>
         </div>
 
